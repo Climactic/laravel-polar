@@ -9,7 +9,7 @@ use Climactic\LaravelPolar\Concerns\ManagesCustomerMeters;
 use Climactic\LaravelPolar\Concerns\ManagesOrders;
 use Climactic\LaravelPolar\Concerns\ManagesSubscription;
 
-trait Billable // @phpstan-ignore-line trait.unused - Billable is used in the user final code
+trait Billable
 {
     use ManagesBenefits;
     use ManagesCheckouts;

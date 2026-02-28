@@ -28,6 +28,7 @@ use Climactic\LaravelPolar\Events\SubscriptionRevoked;
 use Climactic\LaravelPolar\Events\SubscriptionUpdated;
 use Climactic\LaravelPolar\Events\WebhookHandled;
 use Climactic\LaravelPolar\Events\WebhookReceived;
+use Climactic\LaravelPolar\Events\WebhookSkipped;
 use Climactic\LaravelPolar\Exceptions\InvalidMetadataPayload;
 use Climactic\LaravelPolar\LaravelPolar;
 use Climactic\LaravelPolar\Order as EloquentOrder;
@@ -63,32 +64,36 @@ class ProcessWebhook extends ProcessWebhookJob
 
         WebhookReceived::dispatch($payload);
 
-        match ($type) {
+        $skippedReason = match ($type) {
             'order.created' => $this->handleOrderCreated($data, $timestamp, $type),
             'order.updated' => $this->handleOrderUpdated($data, $timestamp, $type),
             'subscription.created' => $this->handleSubscriptionCreated($data, $timestamp, $type),
-            'subscription.updated' => $this->handleSubscriptionUpdated($data, $timestamp, $type),
-            'subscription.active' => $this->handleSubscriptionActive($data, $timestamp, $type),
-            'subscription.canceled' => $this->handleSubscriptionCanceled($data, $timestamp, $type),
-            'subscription.revoked' => $this->handleSubscriptionRevoked($data, $timestamp, $type),
-            'benefit_grant.created' => $this->handleBenefitGrantCreated($data, $timestamp, $type),
-            'benefit_grant.updated' => $this->handleBenefitGrantUpdated($data, $timestamp, $type),
-            'benefit_grant.revoked' => $this->handleBenefitGrantRevoked($data, $timestamp, $type),
-            'checkout.created' => $this->handleCheckoutCreated($data, $timestamp, $type),
-            'checkout.updated' => $this->handleCheckoutUpdated($data, $timestamp, $type),
-            'checkout.expired' => $this->handleCheckoutExpired($data, $timestamp, $type),
-            'customer.created' => $this->handleCustomerCreated($data, $timestamp, $type),
-            'customer.updated' => $this->handleCustomerUpdated($data, $timestamp, $type),
-            'customer.deleted' => $this->handleCustomerDeleted($data, $timestamp, $type),
-            'customer.state_changed' => $this->handleCustomerStateChanged($data, $timestamp, $type),
-            'product.created' => $this->handleProductCreated($data, $timestamp, $type),
-            'product.updated' => $this->handleProductUpdated($data, $timestamp, $type),
-            'benefit.created' => $this->handleBenefitCreated($data, $timestamp, $type),
-            'benefit.updated' => $this->handleBenefitUpdated($data, $timestamp, $type),
-            default => Log::info("Unknown event type: $type"),
+            'subscription.updated' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionUpdated::class),
+            'subscription.active' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionActive::class),
+            'subscription.canceled' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionCanceled::class),
+            'subscription.revoked' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionRevoked::class),
+            'benefit_grant.created' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantCreated::class),
+            'benefit_grant.updated' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantUpdated::class),
+            'benefit_grant.revoked' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantRevoked::class),
+            'checkout.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, CheckoutCreated::class, Components\Checkout::class),
+            'checkout.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, CheckoutUpdated::class, Components\Checkout::class),
+            'checkout.expired' => $this->dispatchSimpleEvent($data, $timestamp, $type, CheckoutExpired::class, Components\Checkout::class),
+            'customer.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerCreated::class, Components\Customer::class),
+            'customer.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerUpdated::class, Components\Customer::class),
+            'customer.deleted' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerDeleted::class, Components\Customer::class),
+            'customer.state_changed' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerStateChanged::class, Components\CustomerState::class),
+            'product.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, ProductCreated::class, Components\Product::class),
+            'product.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, ProductUpdated::class, Components\Product::class),
+            'benefit.created' => $this->handleBenefitEvent($data, $timestamp, $type, BenefitCreated::class),
+            'benefit.updated' => $this->handleBenefitEvent($data, $timestamp, $type, BenefitUpdated::class),
+            default => "Unknown event type: $type",
         };
 
-        WebhookHandled::dispatch($payload);
+        if ($skippedReason !== null) {
+            WebhookSkipped::dispatch($payload, $skippedReason);
+        } else {
+            WebhookHandled::dispatch($payload);
+        }
     }
 
     /**
@@ -96,12 +101,11 @@ class ProcessWebhook extends ProcessWebhookJob
      *
      * @param  array<string, mixed>  $data
      */
-    private function handleOrderCreated(array $data, \DateTime $timestamp, string $type): void
+    private function handleOrderCreated(array $data, \DateTime $timestamp, string $type): ?string // @phpstan-ignore return.unusedType
     {
         $billable = $this->resolveBillable($data);
 
-        $order = $billable->orders()->create([ // @phpstan-ignore-line class.notFound - the property is found in the billable model
-            'polar_id' => $data['id'],
+        $order = $billable->orders()->firstOrCreate(['polar_id' => $data['id']], [
             'status' => \is_string($data['status']) ? OrderStatus::from($data['status']) : $data['status'],
             'amount' => $data['amount'],
             'tax_amount' => $data['tax_amount'],
@@ -114,8 +118,11 @@ class ProcessWebhook extends ProcessWebhookJob
             'ordered_at' => Carbon::make($data['created_at']),
         ]);
 
-        $payload = $this->createOrderCreatedPayload($data, $timestamp, $type);
-        OrderCreated::dispatch($billable, $order, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        $sdkOrder = $this->arrayToComponent($data, Components\Order::class);
+        $payload = new Components\WebhookOrderCreatedPayload($timestamp, $sdkOrder, $type);
+        OrderCreated::dispatch($billable, $order, $payload);
+
+        return null;
     }
 
     /**
@@ -123,16 +130,12 @@ class ProcessWebhook extends ProcessWebhookJob
      *
      * @param  array<string, mixed>  $data
      */
-    private function handleOrderUpdated(array $data, \DateTime $timestamp, string $type): void
+    private function handleOrderUpdated(array $data, \DateTime $timestamp, string $type): ?string
     {
         $billable = $this->resolveBillable($data);
 
         if (!($order = $this->findOrder($data['id'])) instanceof EloquentOrder) {
-            Log::warning('Order not found for webhook update', [
-                'order_id' => $data['id'],
-                'event_type' => $type,
-            ]);
-            return;
+            return "Order not found: {$data['id']}";
         }
 
         $status = $data['status'];
@@ -144,8 +147,11 @@ class ProcessWebhook extends ProcessWebhookJob
             'refunded_at' => $isRefunded ? Carbon::make($data['refunded_at']) : null,
         ]);
 
-        $payload = $this->createOrderUpdatedPayload($data, $timestamp, $type);
-        OrderUpdated::dispatch($billable, $order, $payload, $isRefunded); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        $sdkOrder = $this->arrayToComponent($data, Components\Order::class);
+        $payload = new Components\WebhookOrderUpdatedPayload($timestamp, $sdkOrder, $type);
+        OrderUpdated::dispatch($billable, $order, $payload, $isRefunded);
+
+        return null;
     }
 
     /**
@@ -153,149 +159,145 @@ class ProcessWebhook extends ProcessWebhookJob
      *
      * @param  array<string, mixed>  $data
      */
-    private function handleSubscriptionCreated(array $data, \DateTime $timestamp, string $type): void
+    private function handleSubscriptionCreated(array $data, \DateTime $timestamp, string $type): ?string // @phpstan-ignore return.unusedType
     {
         $customerMetadata = $data['customer']['metadata'];
         $billable = $this->resolveBillable($data);
 
-        $subscription = $billable->subscriptions()->create([ // @phpstan-ignore-line class.notFound - the property is found in the billable model
+        $subscription = $billable->subscriptions()->create([
             'type' => $customerMetadata['subscription_type'] ?? 'default',
             'polar_id' => $data['id'],
             'status' => \is_string($data['status']) ? SubscriptionStatus::from($data['status']) : $data['status'],
             'product_id' => $data['product_id'],
             'current_period_end' => $data['current_period_end'] ? Carbon::make($data['current_period_end']) : null,
+            'trial_ends_at' => isset($data['trial_ends_at']) ? Carbon::make($data['trial_ends_at']) : null,
             'ends_at' => $data['ends_at'] ? Carbon::make($data['ends_at']) : null,
         ]);
 
-        if ($billable->customer->polar_id === null) { // @phpstan-ignore-line property.notFound - the property is found in the billable model
-            $billable->customer->update(['polar_id' => $data['customer_id']]); // @phpstan-ignore-line property.notFound - the property is found in the billable model
+        if ($billable->customer->polar_id === null) {
+            $billable->customer->update(['polar_id' => $data['customer_id']]);
         }
 
-        $payload = $this->createSubscriptionCreatedPayload($data, $timestamp, $type);
-        SubscriptionCreated::dispatch($billable, $subscription, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        $sdkSubscription = $this->arrayToComponent($data, Components\Subscription::class);
+        $payload = new Components\WebhookSubscriptionCreatedPayload($timestamp, $sdkSubscription, $type);
+        SubscriptionCreated::dispatch($billable, $subscription, $payload);
+
+        return null;
     }
 
     /**
-     * Handle the subscription updated event.
+     * Handle a subscription sync event (updated/active/canceled/revoked).
      *
      * @param  array<string, mixed>  $data
+     * @param  class-string  $eventClass
      */
-    private function handleSubscriptionUpdated(array $data, \DateTime $timestamp, string $type): void
+    private function handleSubscriptionSyncEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string
     {
         if (!($subscription = $this->findSubscription($data['id'])) instanceof EloquentSubscription) {
-            Log::warning('Subscription not found for webhook update', [
-                'subscription_id' => $data['id'],
-                'event_type' => $type,
-            ]);
-            return;
+            return "Subscription not found: {$data['id']}";
         }
 
         $subscription->sync($data);
 
-        $payload = $this->createSubscriptionUpdatedPayload($data, $timestamp, $type);
-        SubscriptionUpdated::dispatch($subscription->billable, $subscription, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        $sdkSubscription = $this->arrayToComponent($data, Components\Subscription::class);
+        $payloadClass = $this->subscriptionPayloadClass($type);
+        $payload = new $payloadClass($timestamp, $sdkSubscription, $type);
+        $eventClass::dispatch($subscription->billable, $subscription, $payload);
+
+        return null;
     }
 
     /**
-     * Handle the subscription active event.
+     * Resolve the webhook payload class for a subscription event type.
      *
-     * @param  array<string, mixed>  $data
+     * @return class-string
      */
-    private function handleSubscriptionActive(array $data, \DateTime $timestamp, string $type): void
+    private function subscriptionPayloadClass(string $type): string
     {
-        if (!($subscription = $this->findSubscription($data['id'])) instanceof EloquentSubscription) {
-            Log::warning('Subscription not found for webhook active event', [
-                'subscription_id' => $data['id'],
-                'event_type' => $type,
-            ]);
-            return;
-        }
-
-        $subscription->sync($data);
-
-        $payload = $this->createSubscriptionActivePayload($data, $timestamp, $type);
-        SubscriptionActive::dispatch($subscription->billable, $subscription, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        return match ($type) {
+            'subscription.updated' => Components\WebhookSubscriptionUpdatedPayload::class,
+            'subscription.active' => Components\WebhookSubscriptionActivePayload::class,
+            'subscription.canceled' => Components\WebhookSubscriptionCanceledPayload::class,
+            default => Components\WebhookSubscriptionRevokedPayload::class,
+        };
     }
 
     /**
-     * Handle the subscription canceled event.
+     * Handle a benefit grant event (created/updated/revoked).
      *
      * @param  array<string, mixed>  $data
+     * @param  class-string  $eventClass
      */
-    private function handleSubscriptionCanceled(array $data, \DateTime $timestamp, string $type): void
-    {
-        if (!($subscription = $this->findSubscription($data['id'])) instanceof EloquentSubscription) {
-            Log::warning('Subscription not found for webhook canceled event', [
-                'subscription_id' => $data['id'],
-                'event_type' => $type,
-            ]);
-            return;
-        }
-
-        $subscription->sync($data);
-
-        $payload = $this->createSubscriptionCanceledPayload($data, $timestamp, $type);
-        SubscriptionCanceled::dispatch($subscription->billable, $subscription, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
-    }
-
-    /**
-     * Handle the subscription revoked event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleSubscriptionRevoked(array $data, \DateTime $timestamp, string $type): void
-    {
-        if (!($subscription = $this->findSubscription($data['id'])) instanceof EloquentSubscription) {
-            Log::warning('Subscription not found for webhook revoked event', [
-                'subscription_id' => $data['id'],
-                'event_type' => $type,
-            ]);
-            return;
-        }
-
-        $subscription->sync($data);
-
-        $payload = $this->createSubscriptionRevokedPayload($data, $timestamp, $type);
-        SubscriptionRevoked::dispatch($subscription->billable, $subscription, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
-    }
-
-    /**
-     * Handle the benefit grant created event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleBenefitGrantCreated(array $data, \DateTime $timestamp, string $type): void
+    private function handleBenefitGrantEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string // @phpstan-ignore return.unusedType
     {
         $billable = $this->resolveBillable($data);
 
-        $payload = $this->createBenefitGrantCreatedPayload($data, $timestamp, $type);
-        BenefitGrantCreated::dispatch($billable, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        $benefitGrant = $this->arrayToBenefitGrant($data);
+        $payloadClass = match ($type) {
+            'benefit_grant.created' => Components\WebhookBenefitGrantCreatedPayload::class,
+            'benefit_grant.updated' => Components\WebhookBenefitGrantUpdatedPayload::class,
+            default => Components\WebhookBenefitGrantRevokedPayload::class,
+        };
+        $payload = new $payloadClass($timestamp, $benefitGrant, $type);
+        $eventClass::dispatch($billable, $payload);
+
+        return null;
     }
 
     /**
-     * Handle the benefit grant updated event.
+     * Dispatch a simple payload-only event (checkout/customer/product).
      *
      * @param  array<string, mixed>  $data
+     * @param  class-string  $eventClass
+     * @param  class-string  $componentClass
      */
-    private function handleBenefitGrantUpdated(array $data, \DateTime $timestamp, string $type): void
+    private function dispatchSimpleEvent(array $data, \DateTime $timestamp, string $type, string $eventClass, string $componentClass): ?string // @phpstan-ignore return.unusedType
     {
-        $billable = $this->resolveBillable($data);
+        $component = $this->arrayToComponent($data, $componentClass);
+        $payloadClass = $this->simplePayloadClass($type);
+        $payload = new $payloadClass($timestamp, $component, $type);
+        $eventClass::dispatch($payload);
 
-        $payload = $this->createBenefitGrantUpdatedPayload($data, $timestamp, $type);
-        BenefitGrantUpdated::dispatch($billable, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        return null;
     }
 
     /**
-     * Handle the benefit grant revoked event.
+     * Resolve the webhook payload class for simple (payload-only) event types.
+     *
+     * @return class-string
+     */
+    private function simplePayloadClass(string $type): string
+    {
+        return match ($type) {
+            'checkout.created' => Components\WebhookCheckoutCreatedPayload::class,
+            'checkout.updated' => Components\WebhookCheckoutUpdatedPayload::class,
+            'checkout.expired' => Components\WebhookCheckoutExpiredPayload::class,
+            'customer.created' => Components\WebhookCustomerCreatedPayload::class,
+            'customer.updated' => Components\WebhookCustomerUpdatedPayload::class,
+            'customer.deleted' => Components\WebhookCustomerDeletedPayload::class,
+            'customer.state_changed' => Components\WebhookCustomerStateChangedPayload::class,
+            'product.created' => Components\WebhookProductCreatedPayload::class,
+            default => Components\WebhookProductUpdatedPayload::class,
+        };
+    }
+
+    /**
+     * Handle a benefit event (created/updated) — dispatches payload-only.
      *
      * @param  array<string, mixed>  $data
+     * @param  class-string  $eventClass
      */
-    private function handleBenefitGrantRevoked(array $data, \DateTime $timestamp, string $type): void
+    private function handleBenefitEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string // @phpstan-ignore return.unusedType
     {
-        $billable = $this->resolveBillable($data);
+        $benefit = $this->arrayToBenefit($data);
+        $payloadClass = match ($type) {
+            'benefit.created' => Components\WebhookBenefitCreatedPayload::class,
+            default => Components\WebhookBenefitUpdatedPayload::class,
+        };
+        $payload = new $payloadClass($timestamp, $benefit, $type);
+        $eventClass::dispatch($payload);
 
-        $payload = $this->createBenefitGrantRevokedPayload($data, $timestamp, $type);
-        BenefitGrantRevoked::dispatch($billable, $payload); // @phpstan-ignore-line argument.type - Billable is a instance of a model
+        return null;
     }
 
     /**
@@ -306,7 +308,7 @@ class ProcessWebhook extends ProcessWebhookJob
      *
      * @throws InvalidMetadataPayload
      */
-    private function resolveBillable(array $payload) // @phpstan-ignore-line return.trait - Billable is used in the user final code
+    private function resolveBillable(array $payload)
     {
         $customerMetadata = $payload['customer']['metadata'] ?? null;
 
@@ -326,7 +328,7 @@ class ProcessWebhook extends ProcessWebhookJob
      *
      * @return \Climactic\LaravelPolar\Billable
      */
-    private function findOrCreateCustomer(int|string $billableId, string $billableType, string $customerId) // @phpstan-ignore-line return.trait - Billable is used in the user final code
+    private function findOrCreateCustomer(int|string $billableId, string $billableType, string $customerId)
     {
         return LaravelPolar::$customerModel::firstOrCreate([
             'billable_id' => $billableId,
@@ -382,95 +384,13 @@ class ProcessWebhook extends ProcessWebhookJob
     }
 
     /**
-     * Create WebhookOrderCreatedPayload from array data.
+     * Deserialize array data into an SDK component.
+     *
+     * @template T
+     * @param  array<string, mixed>  $data
+     * @param  class-string<T>  $class
+     * @return T
      */
-    private function createOrderCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookOrderCreatedPayload
-    {
-        $order = $this->arrayToOrder($data);
-        return new Components\WebhookOrderCreatedPayload($timestamp, $order, $type);
-    }
-
-    /**
-     * Create WebhookOrderUpdatedPayload from array data.
-     */
-    private function createOrderUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookOrderUpdatedPayload
-    {
-        $order = $this->arrayToOrder($data);
-        return new Components\WebhookOrderUpdatedPayload($timestamp, $order, $type);
-    }
-
-    /**
-     * Create WebhookSubscriptionCreatedPayload from array data.
-     */
-    private function createSubscriptionCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookSubscriptionCreatedPayload
-    {
-        $subscription = $this->arrayToSubscription($data);
-        return new Components\WebhookSubscriptionCreatedPayload($timestamp, $subscription, $type);
-    }
-
-    /**
-     * Create WebhookSubscriptionUpdatedPayload from array data.
-     */
-    private function createSubscriptionUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookSubscriptionUpdatedPayload
-    {
-        $subscription = $this->arrayToSubscription($data);
-        return new Components\WebhookSubscriptionUpdatedPayload($timestamp, $subscription, $type);
-    }
-
-    /**
-     * Create WebhookSubscriptionActivePayload from array data.
-     */
-    private function createSubscriptionActivePayload(array $data, \DateTime $timestamp, string $type): Components\WebhookSubscriptionActivePayload
-    {
-        $subscription = $this->arrayToSubscription($data);
-        return new Components\WebhookSubscriptionActivePayload($timestamp, $subscription, $type);
-    }
-
-    /**
-     * Create WebhookSubscriptionCanceledPayload from array data.
-     */
-    private function createSubscriptionCanceledPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookSubscriptionCanceledPayload
-    {
-        $subscription = $this->arrayToSubscription($data);
-        return new Components\WebhookSubscriptionCanceledPayload($timestamp, $subscription, $type);
-    }
-
-    /**
-     * Create WebhookSubscriptionRevokedPayload from array data.
-     */
-    private function createSubscriptionRevokedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookSubscriptionRevokedPayload
-    {
-        $subscription = $this->arrayToSubscription($data);
-        return new Components\WebhookSubscriptionRevokedPayload($timestamp, $subscription, $type);
-    }
-
-    /**
-     * Create WebhookBenefitGrantCreatedPayload from array data.
-     */
-    private function createBenefitGrantCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookBenefitGrantCreatedPayload
-    {
-        $benefitGrant = $this->arrayToBenefitGrant($data);
-        return new Components\WebhookBenefitGrantCreatedPayload($timestamp, $benefitGrant, $type);
-    }
-
-    /**
-     * Create WebhookBenefitGrantUpdatedPayload from array data.
-     */
-    private function createBenefitGrantUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookBenefitGrantUpdatedPayload
-    {
-        $benefitGrant = $this->arrayToBenefitGrant($data);
-        return new Components\WebhookBenefitGrantUpdatedPayload($timestamp, $benefitGrant, $type);
-    }
-
-    /**
-     * Create WebhookBenefitGrantRevokedPayload from array data.
-     */
-    private function createBenefitGrantRevokedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookBenefitGrantRevokedPayload
-    {
-        $benefitGrant = $this->arrayToBenefitGrant($data);
-        return new Components\WebhookBenefitGrantRevokedPayload($timestamp, $benefitGrant, $type);
-    }
-
     private function arrayToComponent(array $data, string $class): mixed
     {
         $json = json_encode($data);
@@ -478,16 +398,6 @@ class ProcessWebhook extends ProcessWebhookJob
             throw new \RuntimeException("Failed to encode data to JSON for {$class}: " . json_last_error_msg());
         }
         return $this->getSerializer()->deserialize($json, $class, 'json');
-    }
-
-    private function arrayToOrder(array $data): Components\Order
-    {
-        return $this->arrayToComponent($data, Components\Order::class);
-    }
-
-    private function arrayToSubscription(array $data): Components\Subscription
-    {
-        return $this->arrayToComponent($data, Components\Subscription::class);
     }
 
     private function arrayToBenefitGrant(array $data): Components\BenefitGrantDiscordWebhook|Components\BenefitGrantCustomWebhook|Components\BenefitGrantGitHubRepositoryWebhook|Components\BenefitGrantDownloadablesWebhook|Components\BenefitGrantLicenseKeysWebhook|Components\BenefitGrantMeterCreditWebhook
@@ -509,246 +419,6 @@ class ProcessWebhook extends ProcessWebhookJob
             'meter_credit' => $serializer->deserialize($json, Components\BenefitGrantMeterCreditWebhook::class, 'json'),
             default => $serializer->deserialize($json, Components\BenefitGrantCustomWebhook::class, 'json'),
         };
-    }
-
-    /**
-     * Handle the checkout created event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCheckoutCreated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCheckoutCreatedPayload($data, $timestamp, $type);
-        CheckoutCreated::dispatch($payload);
-    }
-
-    /**
-     * Handle the checkout updated event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCheckoutUpdated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCheckoutUpdatedPayload($data, $timestamp, $type);
-        CheckoutUpdated::dispatch($payload);
-    }
-
-    /**
-     * Handle the checkout expired event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCheckoutExpired(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCheckoutExpiredPayload($data, $timestamp, $type);
-        CheckoutExpired::dispatch($payload);
-    }
-
-    /**
-     * Handle the customer created event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCustomerCreated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCustomerCreatedPayload($data, $timestamp, $type);
-        CustomerCreated::dispatch($payload);
-    }
-
-    /**
-     * Handle the customer updated event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCustomerUpdated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCustomerUpdatedPayload($data, $timestamp, $type);
-        CustomerUpdated::dispatch($payload);
-    }
-
-    /**
-     * Handle the customer deleted event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCustomerDeleted(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCustomerDeletedPayload($data, $timestamp, $type);
-        CustomerDeleted::dispatch($payload);
-    }
-
-    /**
-     * Handle the customer state changed event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleCustomerStateChanged(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createCustomerStateChangedPayload($data, $timestamp, $type);
-        CustomerStateChanged::dispatch($payload);
-    }
-
-    /**
-     * Handle the product created event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleProductCreated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createProductCreatedPayload($data, $timestamp, $type);
-        ProductCreated::dispatch($payload);
-    }
-
-    /**
-     * Handle the product updated event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleProductUpdated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createProductUpdatedPayload($data, $timestamp, $type);
-        ProductUpdated::dispatch($payload);
-    }
-
-    /**
-     * Handle the benefit created event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleBenefitCreated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createBenefitCreatedPayload($data, $timestamp, $type);
-        BenefitCreated::dispatch($payload);
-    }
-
-    /**
-     * Handle the benefit updated event.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function handleBenefitUpdated(array $data, \DateTime $timestamp, string $type): void
-    {
-        $payload = $this->createBenefitUpdatedPayload($data, $timestamp, $type);
-        BenefitUpdated::dispatch($payload);
-    }
-
-    /**
-     * Create WebhookCheckoutCreatedPayload from array data.
-     */
-    private function createCheckoutCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCheckoutCreatedPayload
-    {
-        $checkout = $this->arrayToCheckout($data);
-        return new Components\WebhookCheckoutCreatedPayload($timestamp, $checkout, $type);
-    }
-
-    /**
-     * Create WebhookCheckoutUpdatedPayload from array data.
-     */
-    private function createCheckoutUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCheckoutUpdatedPayload
-    {
-        $checkout = $this->arrayToCheckout($data);
-        return new Components\WebhookCheckoutUpdatedPayload($timestamp, $checkout, $type);
-    }
-
-    /**
-     * Create WebhookCheckoutExpiredPayload from array data.
-     */
-    private function createCheckoutExpiredPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCheckoutExpiredPayload
-    {
-        $checkout = $this->arrayToCheckout($data);
-        return new Components\WebhookCheckoutExpiredPayload($timestamp, $checkout, $type);
-    }
-
-    /**
-     * Create WebhookCustomerCreatedPayload from array data.
-     */
-    private function createCustomerCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCustomerCreatedPayload
-    {
-        $customer = $this->arrayToCustomer($data);
-        return new Components\WebhookCustomerCreatedPayload($timestamp, $customer, $type);
-    }
-
-    /**
-     * Create WebhookCustomerUpdatedPayload from array data.
-     */
-    private function createCustomerUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCustomerUpdatedPayload
-    {
-        $customer = $this->arrayToCustomer($data);
-        return new Components\WebhookCustomerUpdatedPayload($timestamp, $customer, $type);
-    }
-
-    /**
-     * Create WebhookCustomerDeletedPayload from array data.
-     */
-    private function createCustomerDeletedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCustomerDeletedPayload
-    {
-        $customer = $this->arrayToCustomer($data);
-        return new Components\WebhookCustomerDeletedPayload($timestamp, $customer, $type);
-    }
-
-    /**
-     * Create WebhookCustomerStateChangedPayload from array data.
-     */
-    private function createCustomerStateChangedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookCustomerStateChangedPayload
-    {
-        $customerState = $this->arrayToCustomerState($data);
-        return new Components\WebhookCustomerStateChangedPayload($timestamp, $customerState, $type);
-    }
-
-    /**
-     * Create WebhookProductCreatedPayload from array data.
-     */
-    private function createProductCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookProductCreatedPayload
-    {
-        $product = $this->arrayToProduct($data);
-        return new Components\WebhookProductCreatedPayload($timestamp, $product, $type);
-    }
-
-    /**
-     * Create WebhookProductUpdatedPayload from array data.
-     */
-    private function createProductUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookProductUpdatedPayload
-    {
-        $product = $this->arrayToProduct($data);
-        return new Components\WebhookProductUpdatedPayload($timestamp, $product, $type);
-    }
-
-    /**
-     * Create WebhookBenefitCreatedPayload from array data.
-     */
-    private function createBenefitCreatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookBenefitCreatedPayload
-    {
-        $benefit = $this->arrayToBenefit($data);
-        return new Components\WebhookBenefitCreatedPayload($timestamp, $benefit, $type);
-    }
-
-    /**
-     * Create WebhookBenefitUpdatedPayload from array data.
-     */
-    private function createBenefitUpdatedPayload(array $data, \DateTime $timestamp, string $type): Components\WebhookBenefitUpdatedPayload
-    {
-        $benefit = $this->arrayToBenefit($data);
-        return new Components\WebhookBenefitUpdatedPayload($timestamp, $benefit, $type);
-    }
-
-    private function arrayToCheckout(array $data): Components\Checkout
-    {
-        return $this->arrayToComponent($data, Components\Checkout::class);
-    }
-
-    private function arrayToCustomer(array $data): Components\Customer
-    {
-        return $this->arrayToComponent($data, Components\Customer::class);
-    }
-
-    private function arrayToCustomerState(array $data): Components\CustomerState
-    {
-        return $this->arrayToComponent($data, Components\CustomerState::class);
-    }
-
-    private function arrayToProduct(array $data): Components\Product
-    {
-        return $this->arrayToComponent($data, Components\Product::class);
     }
 
     private function arrayToBenefit(array $data): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit

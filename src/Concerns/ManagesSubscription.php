@@ -6,7 +6,7 @@ use Climactic\LaravelPolar\LaravelPolar;
 use Climactic\LaravelPolar\Subscription;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-trait ManagesSubscription // @phpstan-ignore-line trait.unused - ManagesSubscription is used in Billable trait
+trait ManagesSubscription
 {
     /**
      * Get all of the subscriptions for the billable.
@@ -37,7 +37,7 @@ trait ManagesSubscription // @phpstan-ignore-line trait.unused - ManagesSubscrip
             return false;
         }
 
-        return $productId !== null && $productId !== '' && $productId !== '0' ? $subscription->hasProduct($productId) : true;
+        return $productId ? $subscription->hasProduct($productId) : true;
     }
 
     /**

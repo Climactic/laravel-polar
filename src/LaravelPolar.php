@@ -2,7 +2,7 @@
 
 namespace Climactic\LaravelPolar;
 
-use Exception;
+use Climactic\LaravelPolar\Exceptions\PolarApiError;
 use Polar\Models\Components;
 use Polar\Models\Errors;
 use Polar\Models\Operations;
@@ -10,8 +10,6 @@ use Polar\Polar;
 
 class LaravelPolar
 {
-    public const string VERSION = '0.3.2';
-
     /**
      * The cached Polar SDK instance.
      */
@@ -36,7 +34,7 @@ class LaravelPolar
      * Create a checkout session.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function createCheckoutSession(Components\CheckoutCreate $request): Components\Checkout
     {
@@ -57,7 +55,7 @@ class LaravelPolar
      * @param Components\SubscriptionUpdateProduct|Components\SubscriptionCancel|Components\SubscriptionUpdateDiscount|Components\SubscriptionUpdateTrial|Components\SubscriptionUpdateSeats|Components\SubscriptionRevoke $request
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function updateSubscription(string $subscriptionId, Components\SubscriptionUpdateProduct|Components\SubscriptionCancel|Components\SubscriptionUpdateDiscount|Components\SubscriptionUpdateTrial|Components\SubscriptionUpdateSeats|Components\SubscriptionRevoke $request): Components\Subscription
     {
@@ -79,7 +77,7 @@ class LaravelPolar
      * List all products.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function listProducts(?Operations\ProductsListRequest $request = null): Operations\ProductsListResponse
     {
@@ -106,7 +104,7 @@ class LaravelPolar
      * @param Components\CustomerSessionCustomerIDCreate|Components\CustomerSessionCustomerExternalIDCreate $request
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function createCustomerSession(Components\CustomerSessionCustomerIDCreate|Components\CustomerSessionCustomerExternalIDCreate $request): Components\CustomerSession
     {
@@ -127,7 +125,7 @@ class LaravelPolar
      * @param Components\BenefitCustomCreate|Components\BenefitDiscordCreate|Components\BenefitGitHubRepositoryCreate|Components\BenefitDownloadablesCreate|Components\BenefitLicenseKeysCreate|Components\BenefitMeterCreditCreate $request
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function createBenefit(Components\BenefitCustomCreate|Components\BenefitDiscordCreate|Components\BenefitGitHubRepositoryCreate|Components\BenefitDownloadablesCreate|Components\BenefitLicenseKeysCreate|Components\BenefitMeterCreditCreate $request): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
@@ -148,7 +146,7 @@ class LaravelPolar
      * @param Components\BenefitCustomUpdate|Components\BenefitDiscordUpdate|Components\BenefitGitHubRepositoryUpdate|Components\BenefitDownloadablesUpdate|Components\BenefitLicenseKeysUpdate|Components\BenefitMeterCreditUpdate $request
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function updateBenefit(string $benefitId, Components\BenefitCustomUpdate|Components\BenefitDiscordUpdate|Components\BenefitGitHubRepositoryUpdate|Components\BenefitDownloadablesUpdate|Components\BenefitLicenseKeysUpdate|Components\BenefitMeterCreditUpdate $request): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
@@ -167,7 +165,7 @@ class LaravelPolar
      * Delete a benefit.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function deleteBenefit(string $benefitId): void
     {
@@ -184,7 +182,7 @@ class LaravelPolar
      * List all benefits.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function listBenefits(Operations\BenefitsListRequest $request): Operations\BenefitsListResponse
     {
@@ -205,7 +203,7 @@ class LaravelPolar
      * Get a specific benefit by ID.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function getBenefit(string $benefitId): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
@@ -224,7 +222,7 @@ class LaravelPolar
      * List all grants for a specific benefit.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function listBenefitGrants(Operations\BenefitsGrantsRequest $request): Operations\BenefitsGrantsResponse
     {
@@ -245,7 +243,7 @@ class LaravelPolar
      * Ingest usage events for metered billing.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function ingestEvents(Components\EventsIngest $request): void
     {
@@ -262,7 +260,7 @@ class LaravelPolar
      * List customer meters.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function listCustomerMeters(Operations\CustomerMetersListRequest $request): Operations\CustomerMetersListResponse
     {
@@ -283,7 +281,7 @@ class LaravelPolar
      * Get a specific customer meter by ID.
      *
      * @throws Errors\APIException
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function getCustomerMeter(string $meterId): Components\CustomerMeter
     {
@@ -317,7 +315,7 @@ class LaravelPolar
     /**
      * Get or create a cached Polar SDK instance.
      *
-     * @throws Exception
+     * @throws PolarApiError
      */
     public static function sdk(): Polar
     {
@@ -326,7 +324,7 @@ class LaravelPolar
         }
 
         if (empty($apiKey = config('polar.access_token'))) {
-            throw new Exception('Polar API key not set.');
+            throw new PolarApiError('Polar API key not set.');
         }
 
         self::$sdkInstance = Polar::builder()

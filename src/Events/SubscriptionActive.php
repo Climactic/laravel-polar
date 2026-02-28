@@ -4,15 +4,10 @@ namespace Climactic\LaravelPolar\Events;
 
 use Climactic\LaravelPolar\Subscription;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 use Polar\Models\Components\WebhookSubscriptionActivePayload;
 
-class SubscriptionActive
+class SubscriptionActive extends WebhookEvent
 {
-    use Dispatchable;
-    use SerializesModels;
-
     /**
      * Create a new event instance.
      */

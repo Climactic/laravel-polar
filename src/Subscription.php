@@ -30,7 +30,7 @@ use Polar\Models\Components\SubscriptionStatus;
  *
  * @mixin \Eloquent
  */
-class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Billable is used in the user final code
+class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
     use HasFactory;
@@ -303,6 +303,7 @@ class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Bil
             'status' => \is_string($attributes['status']) ? SubscriptionStatus::from($attributes['status']) : $attributes['status'],
             'product_id' => $attributes['product_id'],
             'current_period_end' => isset($attributes['current_period_end']) ? Carbon::make($attributes['current_period_end']) : null,
+            'trial_ends_at' => isset($attributes['trial_ends_at']) ? Carbon::make($attributes['trial_ends_at']) : null,
             'ends_at' => isset($attributes['ends_at']) ? Carbon::make($attributes['ends_at']) : null,
         ]);
 
@@ -318,6 +319,7 @@ class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Bil
         return [
             'status' => SubscriptionStatus::class,
             'current_period_end' => 'datetime',
+            'trial_ends_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
     }

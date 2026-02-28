@@ -113,7 +113,6 @@ class Checkout implements Responsable
         // Process input: trim strings and filter out nulls (defensive programming)
         $processed = collect($customerMetadata)
             ->map(fn($value) => is_string($value) ? trim($value) : $value)
-            /** @phpstan-ignore-next-line Defensive: filter out nulls even though type doesn't allow them */
             ->filter(fn($value) => $value !== null)
             ->toArray();
 

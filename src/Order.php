@@ -3,6 +3,7 @@
 namespace Climactic\LaravelPolar;
 
 use Climactic\LaravelPolar\Database\Factories\OrderFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Polar\Models\Components\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  *
  * @mixin \Eloquent
  */
-class Order extends Model // @phpstan-ignore-line propertyTag.trait - Billable is used in the user final code
+class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
@@ -156,8 +157,8 @@ class Order extends Model // @phpstan-ignore-line propertyTag.trait - Billable i
             'billing_reason' => $attributes['billing_reason'],
             'customer_id' => $attributes['customer_id'],
             'product_id' => $attributes['product_id'],
-            'refunded_at' => $attributes['refunded_at'],
-            'ordered_at' => $attributes['created_at'],
+            'refunded_at' => isset($attributes['refunded_at']) ? Carbon::make($attributes['refunded_at']) : null,
+            'ordered_at' => Carbon::make($attributes['created_at']),
         ]);
 
         return $this;

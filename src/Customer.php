@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  *
  * @mixin \Eloquent
  */
-class Customer extends Model // @phpstan-ignore-line propertyTag.trait - Billable is used in the user final code
+class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;

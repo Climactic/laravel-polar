@@ -2,7 +2,7 @@
 
 namespace Climactic\LaravelPolar\Events;
 
-class WebhookReceived extends WebhookEvent
+class WebhookSkipped extends WebhookEvent
 {
     public function __construct(
         /**
@@ -11,5 +11,9 @@ class WebhookReceived extends WebhookEvent
          * @var array<string, mixed>
          */
         public array $payload,
+        /**
+         * The reason the webhook was skipped.
+         */
+        public string $reason,
     ) {}
 }

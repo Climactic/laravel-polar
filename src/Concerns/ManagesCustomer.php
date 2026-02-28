@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Polar\Models\Components;
 use Polar\Models\Errors;
 
-trait ManagesCustomer // @phpstan-ignore-line trait.unused - ManagesCustomer is used in Billable trait
+trait ManagesCustomer
 {
     /**
      * Create a customer record for the billable model.
