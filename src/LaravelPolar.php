@@ -3,6 +3,7 @@
 namespace Climactic\LaravelPolar;
 
 use Climactic\LaravelPolar\Exceptions\PolarApiError;
+use Climactic\LaravelPolar\Testing\PolarFake;
 use Polar\Models\Components;
 use Polar\Models\Errors;
 use Polar\Models\Operations;
@@ -14,6 +15,11 @@ class LaravelPolar
      * The cached Polar SDK instance.
      */
     private static ?Polar $sdkInstance = null;
+
+    /**
+     * The active fake instance, if any.
+     */
+    private static ?PolarFake $fakeInstance = null;
 
     /**
      * The customer model class name.
@@ -31,6 +37,21 @@ class LaravelPolar
     public static string $orderModel = Order::class;
 
     /**
+     * If a fake is active, record the call and return the stub value.
+     *
+     * @param  list<mixed>  $args
+     * @return array{0: true, 1: mixed}|array{0: false}
+     */
+    private static function recordIfFaking(string $method, array $args): array
+    {
+        if (self::$fakeInstance !== null) {
+            return [true, self::$fakeInstance->recordCall($method, $args)];
+        }
+
+        return [false];
+    }
+
+    /**
      * Create a checkout session.
      *
      * @throws Errors\APIException
@@ -38,6 +59,11 @@ class LaravelPolar
      */
     public static function createCheckoutSession(Components\CheckoutCreate $request): Components\Checkout
     {
+        $fake = self::recordIfFaking('createCheckoutSession', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->checkouts->create(request: $request);
@@ -59,6 +85,11 @@ class LaravelPolar
      */
     public static function updateSubscription(string $subscriptionId, Components\SubscriptionUpdateProduct|Components\SubscriptionCancel|Components\SubscriptionUpdateDiscount|Components\SubscriptionUpdateTrial|Components\SubscriptionUpdateSeats|Components\SubscriptionRevoke $request): Components\Subscription
     {
+        $fake = self::recordIfFaking('updateSubscription', [$subscriptionId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->subscriptions->update(
@@ -81,6 +112,11 @@ class LaravelPolar
      */
     public static function listProducts(?Operations\ProductsListRequest $request = null): Operations\ProductsListResponse
     {
+        $fake = self::recordIfFaking('listProducts', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $request ??= new Operations\ProductsListRequest();
@@ -106,6 +142,11 @@ class LaravelPolar
      */
     public static function createCustomerSession(Components\CustomerSessionCustomerIDCreate|Components\CustomerSessionCustomerExternalIDCreate $request): Components\CustomerSession
     {
+        $fake = self::recordIfFaking('createCustomerSession', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customerSessions->create(request: $request);
@@ -127,6 +168,11 @@ class LaravelPolar
      */
     public static function createBenefit(Components\BenefitCustomCreate|Components\BenefitDiscordCreate|Components\BenefitGitHubRepositoryCreate|Components\BenefitDownloadablesCreate|Components\BenefitLicenseKeysCreate|Components\BenefitMeterCreditCreate $request): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
+        $fake = self::recordIfFaking('createBenefit', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->benefits->create(request: $request);
@@ -148,6 +194,11 @@ class LaravelPolar
      */
     public static function updateBenefit(string $benefitId, Components\BenefitCustomUpdate|Components\BenefitDiscordUpdate|Components\BenefitGitHubRepositoryUpdate|Components\BenefitDownloadablesUpdate|Components\BenefitLicenseKeysUpdate|Components\BenefitMeterCreditUpdate $request): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
+        $fake = self::recordIfFaking('updateBenefit', [$benefitId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->benefits->update(id: $benefitId, requestBody: $request);
@@ -167,6 +218,11 @@ class LaravelPolar
      */
     public static function deleteBenefit(string $benefitId): void
     {
+        $fake = self::recordIfFaking('deleteBenefit', [$benefitId]);
+        if ($fake[0]) {
+            return;
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->benefits->delete(id: $benefitId);
@@ -184,6 +240,11 @@ class LaravelPolar
      */
     public static function listBenefits(Operations\BenefitsListRequest $request): Operations\BenefitsListResponse
     {
+        $fake = self::recordIfFaking('listBenefits', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $generator = $sdk->benefits->list(request: $request);
@@ -205,6 +266,11 @@ class LaravelPolar
      */
     public static function getBenefit(string $benefitId): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
+        $fake = self::recordIfFaking('getBenefit', [$benefitId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->benefits->get(id: $benefitId);
@@ -224,6 +290,11 @@ class LaravelPolar
      */
     public static function listBenefitGrants(Operations\BenefitsGrantsRequest $request): Operations\BenefitsGrantsResponse
     {
+        $fake = self::recordIfFaking('listBenefitGrants', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $generator = $sdk->benefits->grants(request: $request);
@@ -245,6 +316,11 @@ class LaravelPolar
      */
     public static function ingestEvents(Components\EventsIngest $request): void
     {
+        $fake = self::recordIfFaking('ingestEvents', [$request]);
+        if ($fake[0]) {
+            return;
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->events->ingest(request: $request);
@@ -262,6 +338,11 @@ class LaravelPolar
      */
     public static function listCustomerMeters(Operations\CustomerMetersListRequest $request): Operations\CustomerMetersListResponse
     {
+        $fake = self::recordIfFaking('listCustomerMeters', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $generator = $sdk->customerMeters->list(request: $request);
@@ -283,6 +364,11 @@ class LaravelPolar
      */
     public static function getCustomerMeter(string $meterId): Components\CustomerMeter
     {
+        $fake = self::recordIfFaking('getCustomerMeter', [$meterId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customerMeters->get(id: $meterId);
@@ -306,6 +392,11 @@ class LaravelPolar
      */
     public static function createCustomer(Components\CustomerCreate $request): Components\CustomerWithMembers
     {
+        $fake = self::recordIfFaking('createCustomer', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customers->create(request: $request);
@@ -325,6 +416,11 @@ class LaravelPolar
      */
     public static function getCustomer(string $customerId): Components\CustomerWithMembers
     {
+        $fake = self::recordIfFaking('getCustomer', [$customerId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customers->get(id: $customerId);
@@ -344,6 +440,11 @@ class LaravelPolar
      */
     public static function updateCustomer(string $customerId, Components\CustomerUpdate $request): Components\CustomerWithMembers
     {
+        $fake = self::recordIfFaking('updateCustomer', [$customerId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customers->update(id: $customerId, customerUpdate: $request);
@@ -363,6 +464,11 @@ class LaravelPolar
      */
     public static function deleteCustomer(string $customerId): void
     {
+        $fake = self::recordIfFaking('deleteCustomer', [$customerId]);
+        if ($fake[0]) {
+            return;
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customers->delete(id: $customerId);
@@ -380,6 +486,11 @@ class LaravelPolar
      */
     public static function listCustomers(?Operations\CustomersListRequest $request = null): Operations\CustomersListResponse
     {
+        $fake = self::recordIfFaking('listCustomers', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $request ??= new Operations\CustomersListRequest();
@@ -403,6 +514,11 @@ class LaravelPolar
      */
     public static function getCustomerByExternalId(string $externalId): Components\CustomerWithMembers
     {
+        $fake = self::recordIfFaking('getCustomerByExternalId', [$externalId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customers->getExternal(externalId: $externalId);
@@ -422,6 +538,11 @@ class LaravelPolar
      */
     public static function getCustomerState(string $customerId): Components\CustomerState
     {
+        $fake = self::recordIfFaking('getCustomerState', [$customerId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->customers->getState(id: $customerId);
@@ -447,6 +568,11 @@ class LaravelPolar
      */
     public static function createSubscription(Components\SubscriptionCreateCustomer|Components\SubscriptionCreateExternalCustomer $request): Components\Subscription
     {
+        $fake = self::recordIfFaking('createSubscription', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->subscriptions->create(request: $request);
@@ -466,6 +592,11 @@ class LaravelPolar
      */
     public static function listSubscriptions(?Operations\SubscriptionsListRequest $request = null): Operations\SubscriptionsListResponse
     {
+        $fake = self::recordIfFaking('listSubscriptions', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $request ??= new Operations\SubscriptionsListRequest();
@@ -489,6 +620,11 @@ class LaravelPolar
      */
     public static function getSubscription(string $subscriptionId): Components\Subscription
     {
+        $fake = self::recordIfFaking('getSubscription', [$subscriptionId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->subscriptions->get(id: $subscriptionId);
@@ -508,6 +644,11 @@ class LaravelPolar
      */
     public static function revokeSubscription(string $subscriptionId): Components\Subscription
     {
+        $fake = self::recordIfFaking('revokeSubscription', [$subscriptionId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->subscriptions->revoke(id: $subscriptionId);
@@ -531,6 +672,11 @@ class LaravelPolar
      */
     public static function listOrders(?Operations\OrdersListRequest $request = null): Operations\OrdersListResponse
     {
+        $fake = self::recordIfFaking('listOrders', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $request ??= new Operations\OrdersListRequest();
@@ -554,6 +700,11 @@ class LaravelPolar
      */
     public static function getOrder(string $orderId): Components\Order
     {
+        $fake = self::recordIfFaking('getOrder', [$orderId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->orders->get(id: $orderId);
@@ -573,6 +724,11 @@ class LaravelPolar
      */
     public static function getOrderInvoice(string $orderId): Components\OrderInvoice
     {
+        $fake = self::recordIfFaking('getOrderInvoice', [$orderId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->orders->invoice(id: $orderId);
@@ -592,6 +748,11 @@ class LaravelPolar
      */
     public static function generateOrderInvoice(string $orderId): void
     {
+        $fake = self::recordIfFaking('generateOrderInvoice', [$orderId]);
+        if ($fake[0]) {
+            return;
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->orders->generateInvoice(id: $orderId);
@@ -609,6 +770,11 @@ class LaravelPolar
      */
     public static function createRefund(Components\RefundCreate $request): Components\Refund
     {
+        $fake = self::recordIfFaking('createRefund', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->refunds->create(request: $request);
@@ -628,6 +794,11 @@ class LaravelPolar
      */
     public static function listRefunds(?Operations\RefundsListRequest $request = null): Operations\RefundsListResponse
     {
+        $fake = self::recordIfFaking('listRefunds', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $request ??= new Operations\RefundsListRequest();
@@ -657,6 +828,11 @@ class LaravelPolar
      */
     public static function createDiscount(Components\DiscountFixedOnceForeverDurationCreate|Components\DiscountFixedRepeatDurationCreate|Components\DiscountPercentageOnceForeverDurationCreate|Components\DiscountPercentageRepeatDurationCreate $request): Components\DiscountFixedOnceForeverDuration|Components\DiscountFixedRepeatDuration|Components\DiscountPercentageOnceForeverDuration|Components\DiscountPercentageRepeatDuration
     {
+        $fake = self::recordIfFaking('createDiscount', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->discounts->create(request: $request);
@@ -676,6 +852,11 @@ class LaravelPolar
      */
     public static function listDiscounts(?Operations\DiscountsListRequest $request = null): Operations\DiscountsListResponse
     {
+        $fake = self::recordIfFaking('listDiscounts', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $request ??= new Operations\DiscountsListRequest();
@@ -699,6 +880,11 @@ class LaravelPolar
      */
     public static function getDiscount(string $discountId): Components\DiscountFixedOnceForeverDuration|Components\DiscountFixedRepeatDuration|Components\DiscountPercentageOnceForeverDuration|Components\DiscountPercentageRepeatDuration
     {
+        $fake = self::recordIfFaking('getDiscount', [$discountId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->discounts->get(id: $discountId);
@@ -718,6 +904,11 @@ class LaravelPolar
      */
     public static function updateDiscount(string $discountId, Components\DiscountUpdate $request): Components\DiscountFixedOnceForeverDuration|Components\DiscountFixedRepeatDuration|Components\DiscountPercentageOnceForeverDuration|Components\DiscountPercentageRepeatDuration
     {
+        $fake = self::recordIfFaking('updateDiscount', [$discountId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->discounts->update(id: $discountId, discountUpdate: $request);
@@ -737,6 +928,11 @@ class LaravelPolar
      */
     public static function deleteDiscount(string $discountId): void
     {
+        $fake = self::recordIfFaking('deleteDiscount', [$discountId]);
+        if ($fake[0]) {
+            return;
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->discounts->delete(id: $discountId);
@@ -756,11 +952,23 @@ class LaravelPolar
      * @throws Errors\APIException
      * @throws PolarApiError
      */
-    public static function listLicenseKeys(): Operations\LicenseKeysListResponse
+    public static function listLicenseKeys(?Operations\LicenseKeysListRequest $request = null): Operations\LicenseKeysListResponse
     {
+        $fake = self::recordIfFaking('listLicenseKeys', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
-        $generator = $sdk->licenseKeys->list();
+        $request ??= new Operations\LicenseKeysListRequest();
+
+        $generator = $sdk->licenseKeys->list(
+            organizationId: $request->organizationId,
+            benefitId: $request->benefitId,
+            page: $request->page,
+            limit: $request->limit,
+        );
 
         foreach ($generator as $response) {
             if ($response->statusCode === 200) {
@@ -779,6 +987,11 @@ class LaravelPolar
      */
     public static function getLicenseKey(string $licenseKeyId): Components\LicenseKeyWithActivations
     {
+        $fake = self::recordIfFaking('getLicenseKey', [$licenseKeyId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->licenseKeys->get(id: $licenseKeyId);
@@ -798,6 +1011,11 @@ class LaravelPolar
      */
     public static function validateLicenseKey(Components\LicenseKeyValidate $request): Components\ValidatedLicenseKey
     {
+        $fake = self::recordIfFaking('validateLicenseKey', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->licenseKeys->validate(request: $request);
@@ -817,6 +1035,11 @@ class LaravelPolar
      */
     public static function activateLicenseKey(Components\LicenseKeyActivate $request): Components\LicenseKeyActivationRead
     {
+        $fake = self::recordIfFaking('activateLicenseKey', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->licenseKeys->activate(request: $request);
@@ -836,6 +1059,11 @@ class LaravelPolar
      */
     public static function deactivateLicenseKey(Components\LicenseKeyDeactivate $request): void
     {
+        $fake = self::recordIfFaking('deactivateLicenseKey', [$request]);
+        if ($fake[0]) {
+            return;
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->licenseKeys->deactivate(request: $request);
@@ -859,6 +1087,11 @@ class LaravelPolar
      */
     public static function createProduct(Components\ProductCreateRecurring|Components\ProductCreateOneTime $request): Components\Product
     {
+        $fake = self::recordIfFaking('createProduct', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->products->create(request: $request);
@@ -878,6 +1111,11 @@ class LaravelPolar
      */
     public static function getProduct(string $productId): Components\Product
     {
+        $fake = self::recordIfFaking('getProduct', [$productId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->products->get(id: $productId);
@@ -897,6 +1135,11 @@ class LaravelPolar
      */
     public static function updateProduct(string $productId, Components\ProductUpdate $request): Components\Product
     {
+        $fake = self::recordIfFaking('updateProduct', [$productId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->products->update(id: $productId, productUpdate: $request);
@@ -916,6 +1159,11 @@ class LaravelPolar
      */
     public static function updateProductBenefits(string $productId, Components\ProductBenefitsUpdate $request): Components\Product
     {
+        $fake = self::recordIfFaking('updateProductBenefits', [$productId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
         $sdk = self::sdk();
 
         $response = $sdk->products->updateBenefits(id: $productId, productBenefitsUpdate: $request);
@@ -928,11 +1176,30 @@ class LaravelPolar
     }
 
     /**
+     * Replace the SDK with a fake for testing.
+     */
+    public static function fake(): PolarFake
+    {
+        self::$fakeInstance = PolarFake::install();
+
+        return self::$fakeInstance;
+    }
+
+    /**
+     * Get the active fake instance, if any.
+     */
+    public static function getFake(): ?PolarFake
+    {
+        return self::$fakeInstance;
+    }
+
+    /**
      * Reset the cached SDK instance (useful for testing).
      */
     public static function resetSdk(): void
     {
         self::$sdkInstance = null;
+        self::$fakeInstance = null;
     }
 
     /**

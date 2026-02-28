@@ -35,6 +35,7 @@ use Climactic\LaravelPolar\Events\SubscriptionPastDue;
 use Climactic\LaravelPolar\Events\SubscriptionRevoked;
 use Climactic\LaravelPolar\Events\SubscriptionUncanceled;
 use Climactic\LaravelPolar\Events\SubscriptionUpdated;
+use Climactic\LaravelPolar\Contracts\WebhookHandler;
 use Climactic\LaravelPolar\Events\WebhookHandled;
 use Climactic\LaravelPolar\Events\WebhookReceived;
 use Climactic\LaravelPolar\Events\WebhookSkipped;
@@ -74,6 +75,21 @@ class ProcessWebhook extends ProcessWebhookJob
         $timestamp = $this->parseTimestamp($payload['timestamp'] ?? null);
 
         WebhookReceived::dispatch($payload);
+
+        $customHandlers = config('polar.webhook_handlers', []);
+        if (isset($customHandlers[$type])) {
+            /** @var WebhookHandler $handler */
+            $handler = app($customHandlers[$type]);
+            $skippedReason = $handler->handle($data, $timestamp, $type);
+
+            if ($skippedReason !== null) {
+                WebhookSkipped::dispatch($payload, $skippedReason);
+            } else {
+                WebhookHandled::dispatch($payload);
+            }
+
+            return;
+        }
 
         $skippedReason = match ($type) {
             'order.created' => $this->handleOrderCreated($data, $timestamp, $type),

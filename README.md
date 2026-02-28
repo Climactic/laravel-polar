@@ -126,6 +126,14 @@ return [
     |
     */
     'currency_locale' => env('POLAR_CURRENCY_LOCALE', 'en'),
+
+    'organization_id' => env('POLAR_ORGANIZATION_ID'),
+
+    'middleware_redirect_url' => null,
+
+    'webhook_handlers' => [
+        // 'subscription.created' => App\Webhooks\CustomHandler::class,
+    ],
 ];
 ```
 
@@ -216,6 +224,102 @@ Polar includes a JavaScript script that you can use to initialize the [Polar Emb
     @polarEmbedScript
 </head>
 ```
+
+### Blade Directives
+
+The package provides Blade directives for conditionally rendering content based on subscription status.
+
+#### `@subscribed`
+
+Check if the authenticated user (or an explicit billable) has a valid subscription:
+
+```blade
+@subscribed
+    You have an active subscription!
+@else
+    Please subscribe to access this content.
+@endsubscribed
+```
+
+You can pass a subscription type and/or product ID:
+
+```blade
+@subscribed('pro')
+    Welcome, Pro member!
+@endsubscribed
+
+@subscribed('default', 'product_id_123')
+    You're on the right plan.
+@endsubscribed
+```
+
+You can also pass an explicit billable model as the first argument:
+
+```blade
+@subscribed($team)
+    Team is subscribed.
+@endsubscribed
+
+@subscribed($team, 'pro')
+    Team has a Pro plan.
+@endsubscribed
+```
+
+#### `@onTrial`
+
+Check if the authenticated user's subscription is currently trialing:
+
+```blade
+@onTrial
+    You're on a free trial!
+@else
+    Your trial has ended.
+@endonTrial
+```
+
+Accepts a subscription type or an explicit billable, just like `@subscribed`:
+
+```blade
+@onTrial('pro')
+    Your Pro trial is active.
+@endonTrial
+
+@onTrial($user)
+    This user is trialing.
+@endonTrial
+```
+
+### Route Middleware
+
+The `polar.subscribed` middleware protects routes so only subscribed users can access them:
+
+```php
+Route::middleware('polar.subscribed')->group(function () {
+    Route::get('/dashboard', DashboardController::class);
+});
+```
+
+The middleware accepts two optional parameters — **subscription type** (the label you assign when creating [multiple subscriptions](#multiple-subscriptions), defaults to `'default'`) and **product ID** (a specific Polar product the subscription must be for):
+
+```php
+// Require a subscription of type "pro"
+Route::middleware('polar.subscribed:pro')->group(function () {
+    // ...
+});
+
+// Require a "default" subscription on a specific Polar product
+Route::middleware('polar.subscribed:default,product_id_123')->group(function () {
+    // ...
+});
+```
+
+For API requests (when `Accept: application/json` is present), a 403 JSON response is returned. For web requests, you can configure a redirect URL in `config/polar.php`:
+
+```php
+'middleware_redirect_url' => '/billing',
+```
+
+If `middleware_redirect_url` is `null` (the default), a 403 response is returned for web requests as well.
 
 ### Webhooks
 
@@ -1002,6 +1106,36 @@ LaravelPolar::deactivateLicenseKey(new Components\LicenseKeyDeactivate(
 ));
 ```
 
+#### License Keys on Billable
+
+The `Billable` trait includes license key management methods so you can validate, activate, and deactivate keys directly from your user model. These methods require the billable to have a Polar customer record.
+
+The `organization_id` is resolved from `config('polar.organization_id')` by default, so you only need to set it once in your `.env`:
+
+```bash
+POLAR_ORGANIZATION_ID="your-org-id"
+```
+
+You can still pass an explicit organization ID to any method if needed:
+
+```php
+// List license keys (optionally filter by benefit ID)
+$keys = $user->licenseKeys();
+$keys = $user->licenseKeys(benefitId: 'benefit-id-123');
+
+// Validate a license key
+$validated = $user->validateLicenseKey('LICENSE-KEY-VALUE');
+
+// Activate a license key on a device
+$activation = $user->activateLicenseKey('LICENSE-KEY-VALUE', 'My Laptop');
+
+// Deactivate a license key
+$user->deactivateLicenseKey('LICENSE-KEY-VALUE', 'activation-id');
+
+// Override the config org ID for a specific call
+$validated = $user->validateLicenseKey('LICENSE-KEY-VALUE', organizationId: 'other-org-id');
+```
+
 ### Usage-Based Billing
 
 Track customer usage events for metered billing. This allows you to charge customers based on their actual usage of your service.
@@ -1319,7 +1453,86 @@ class EventServiceProvider extends ServiceProvider
 
 Laravel v11 and v12 will automatically discover listeners and subscribers if they follow Laravel's naming conventions.
 
+#### Custom Webhook Handlers
+
+For full control over how a specific webhook event is processed (including database updates), you can register custom handlers in `config/polar.php`. Custom handlers run *instead of* the built-in processing for that event type.
+
+```php
+// config/polar.php
+'webhook_handlers' => [
+    'subscription.created' => App\Webhooks\CustomSubscriptionHandler::class,
+],
+```
+
+Your handler must implement `Climactic\LaravelPolar\Contracts\WebhookHandler`:
+
+```php
+<?php
+
+namespace App\Webhooks;
+
+use Climactic\LaravelPolar\Contracts\WebhookHandler;
+
+class CustomSubscriptionHandler implements WebhookHandler
+{
+    public function handle(array $data, \DateTime $timestamp, string $type): ?string
+    {
+        // Your custom logic here...
+        // $data contains the webhook payload
+
+        // Return null to mark as handled, or a string reason to mark as skipped
+        return null;
+    }
+}
+```
+
+Unregistered event types continue to use the built-in handler.
+
 ## Testing
+
+### Test Fake
+
+Use `LaravelPolar::fake()` to prevent real API calls in your test suite. The fake records all calls and lets you assert against them:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+
+$fake = LaravelPolar::fake();
+
+// Run code that calls LaravelPolar methods...
+LaravelPolar::listProducts();
+
+// Assert methods were called
+$fake->assertCalled('listProducts');
+$fake->assertNotCalled('createProduct');
+$fake->assertCalledTimes('listProducts', 1);
+$fake->assertNothingCalled(); // fails if any method was called
+```
+
+You can stub return values for methods that your code depends on:
+
+```php
+$fake = LaravelPolar::fake();
+$fake->stub('listProducts', $myProductList);
+
+$result = LaravelPolar::listProducts(); // returns $myProductList
+```
+
+Assert that a method was called with specific arguments using a callback:
+
+```php
+$fake->assertCalledWith('getProduct', function (string $id) {
+    return $id === 'product-id-123';
+});
+```
+
+Remember to tear down the fake after each test (or in `tearDown()`):
+
+```php
+$fake->tearDown();
+```
+
+### Running Tests
 
 ```bash
 composer test
@@ -1347,4 +1560,4 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.

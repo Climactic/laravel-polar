@@ -78,4 +78,43 @@ return [
     |
     */
     'currency_locale' => env('POLAR_CURRENCY_LOCALE', 'en'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware Redirect URL
+    |--------------------------------------------------------------------------
+    |
+    | When a user fails the polar.subscribed middleware check and the request
+    | is not expecting JSON, they will be redirected to this URL. If null,
+    | a 403 response is returned instead.
+    |
+    */
+    'middleware_redirect_url' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Polar Organization ID
+    |--------------------------------------------------------------------------
+    |
+    | Your Polar organization ID. This is used as the default for billable
+    | methods like validateLicenseKey(), activateLicenseKey(), etc. so you
+    | don't have to pass it every time. You can find your organization ID
+    | in the Polar dashboard under Settings.
+    |
+    */
+    'organization_id' => env('POLAR_ORGANIZATION_ID'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Webhook Handlers
+    |--------------------------------------------------------------------------
+    |
+    | Register custom webhook handlers for specific event types. Each handler
+    | must implement the Climactic\LaravelPolar\Contracts\WebhookHandler
+    | interface. Custom handlers override the built-in handling for that event.
+    |
+    */
+    'webhook_handlers' => [
+        // 'subscription.created' => App\Webhooks\CustomHandler::class,
+    ],
 ];

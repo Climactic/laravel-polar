@@ -37,6 +37,12 @@ parameters:
 			path: src/Concerns/ManagesCustomerMeters.php
 
 		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesLicenseKeys is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesLicenseKeys.php
+
+		-
 			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesOrders is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1
