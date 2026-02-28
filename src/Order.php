@@ -2,13 +2,17 @@
 
 namespace Climactic\LaravelPolar;
 
-use Climactic\LaravelPolar\Database\Factories\OrderFactory;
 use Carbon\Carbon;
+use Climactic\LaravelPolar\Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Polar\Models\Components\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Polar\Models\Components\OrderInvoice;
+use Polar\Models\Components\OrderStatus;
+use Polar\Models\Components\Refund;
+use Polar\Models\Components\RefundCreate;
+use Polar\Models\Components\RefundReason;
 
 /**
  * @property int $id
@@ -137,6 +141,36 @@ class Order extends Model
     public function hasProduct(string $productId): bool
     {
         return $this->product_id === $productId;
+    }
+
+    /**
+     * Get the invoice for this order.
+     */
+    public function invoice(): OrderInvoice
+    {
+        return LaravelPolar::getOrderInvoice($this->polar_id);
+    }
+
+    /**
+     * Generate/trigger invoice creation for this order.
+     */
+    public function generateInvoice(): void
+    {
+        LaravelPolar::generateOrderInvoice($this->polar_id);
+    }
+
+    /**
+     * Refund this order (full or partial).
+     */
+    public function refund(int $amount, ?RefundReason $reason = null): Refund
+    {
+        $request = new RefundCreate(
+            orderId: $this->polar_id,
+            reason: $reason ?? RefundReason::Other,
+            amount: $amount,
+        );
+
+        return LaravelPolar::createRefund($request);
     }
 
     /**

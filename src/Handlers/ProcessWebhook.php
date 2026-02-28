@@ -4,9 +4,8 @@ namespace Climactic\LaravelPolar\Handlers;
 
 use Carbon\Carbon;
 use Climactic\LaravelPolar\Events\BenefitCreated;
-use Polar\Models\Components\OrderStatus;
-use Polar\Models\Components\SubscriptionStatus;
 use Climactic\LaravelPolar\Events\BenefitGrantCreated;
+use Climactic\LaravelPolar\Events\BenefitGrantCycled;
 use Climactic\LaravelPolar\Events\BenefitGrantRevoked;
 use Climactic\LaravelPolar\Events\BenefitGrantUpdated;
 use Climactic\LaravelPolar\Events\BenefitUpdated;
@@ -15,16 +14,26 @@ use Climactic\LaravelPolar\Events\CheckoutExpired;
 use Climactic\LaravelPolar\Events\CheckoutUpdated;
 use Climactic\LaravelPolar\Events\CustomerCreated;
 use Climactic\LaravelPolar\Events\CustomerDeleted;
+use Climactic\LaravelPolar\Events\CustomerSeatAssigned;
+use Climactic\LaravelPolar\Events\CustomerSeatClaimed;
+use Climactic\LaravelPolar\Events\CustomerSeatRevoked;
 use Climactic\LaravelPolar\Events\CustomerStateChanged;
 use Climactic\LaravelPolar\Events\CustomerUpdated;
 use Climactic\LaravelPolar\Events\OrderCreated;
+use Climactic\LaravelPolar\Events\OrderPaid;
+use Climactic\LaravelPolar\Events\OrderRefunded;
 use Climactic\LaravelPolar\Events\OrderUpdated;
+use Climactic\LaravelPolar\Events\OrganizationUpdated;
 use Climactic\LaravelPolar\Events\ProductCreated;
 use Climactic\LaravelPolar\Events\ProductUpdated;
+use Climactic\LaravelPolar\Events\RefundCreated;
+use Climactic\LaravelPolar\Events\RefundUpdated;
 use Climactic\LaravelPolar\Events\SubscriptionActive;
 use Climactic\LaravelPolar\Events\SubscriptionCanceled;
 use Climactic\LaravelPolar\Events\SubscriptionCreated;
+use Climactic\LaravelPolar\Events\SubscriptionPastDue;
 use Climactic\LaravelPolar\Events\SubscriptionRevoked;
+use Climactic\LaravelPolar\Events\SubscriptionUncanceled;
 use Climactic\LaravelPolar\Events\SubscriptionUpdated;
 use Climactic\LaravelPolar\Events\WebhookHandled;
 use Climactic\LaravelPolar\Events\WebhookReceived;
@@ -35,6 +44,8 @@ use Climactic\LaravelPolar\Order as EloquentOrder;
 use Climactic\LaravelPolar\Subscription as EloquentSubscription;
 use Illuminate\Support\Facades\Log;
 use Polar\Models\Components;
+use Polar\Models\Components\OrderStatus;
+use Polar\Models\Components\SubscriptionStatus;
 use Spatie\WebhookClient\Jobs\ProcessWebhookJob;
 
 class ProcessWebhook extends ProcessWebhookJob
@@ -67,14 +78,21 @@ class ProcessWebhook extends ProcessWebhookJob
         $skippedReason = match ($type) {
             'order.created' => $this->handleOrderCreated($data, $timestamp, $type),
             'order.updated' => $this->handleOrderUpdated($data, $timestamp, $type),
+            'order.paid' => $this->handleOrderSyncEvent($data, $timestamp, $type, OrderPaid::class),
+            'order.refunded' => $this->handleOrderSyncEvent($data, $timestamp, $type, OrderRefunded::class),
             'subscription.created' => $this->handleSubscriptionCreated($data, $timestamp, $type),
             'subscription.updated' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionUpdated::class),
             'subscription.active' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionActive::class),
             'subscription.canceled' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionCanceled::class),
+            'subscription.uncanceled' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionUncanceled::class),
             'subscription.revoked' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionRevoked::class),
+            'subscription.past_due' => $this->handleSubscriptionSyncEvent($data, $timestamp, $type, SubscriptionPastDue::class),
             'benefit_grant.created' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantCreated::class),
             'benefit_grant.updated' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantUpdated::class),
             'benefit_grant.revoked' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantRevoked::class),
+            'benefit_grant.cycled' => $this->handleBenefitGrantEvent($data, $timestamp, $type, BenefitGrantCycled::class),
+            'refund.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, RefundCreated::class, Components\Refund::class),
+            'refund.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, RefundUpdated::class, Components\Refund::class),
             'checkout.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, CheckoutCreated::class, Components\Checkout::class),
             'checkout.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, CheckoutUpdated::class, Components\Checkout::class),
             'checkout.expired' => $this->dispatchSimpleEvent($data, $timestamp, $type, CheckoutExpired::class, Components\Checkout::class),
@@ -82,6 +100,10 @@ class ProcessWebhook extends ProcessWebhookJob
             'customer.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerUpdated::class, Components\Customer::class),
             'customer.deleted' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerDeleted::class, Components\Customer::class),
             'customer.state_changed' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerStateChanged::class, Components\CustomerState::class),
+            'customer_seat.assigned' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerSeatAssigned::class, Components\CustomerSeat::class),
+            'customer_seat.claimed' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerSeatClaimed::class, Components\CustomerSeat::class),
+            'customer_seat.revoked' => $this->dispatchSimpleEvent($data, $timestamp, $type, CustomerSeatRevoked::class, Components\CustomerSeat::class),
+            'organization.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, OrganizationUpdated::class, Components\Organization::class),
             'product.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, ProductCreated::class, Components\Product::class),
             'product.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, ProductUpdated::class, Components\Product::class),
             'benefit.created' => $this->handleBenefitEvent($data, $timestamp, $type, BenefitCreated::class),
@@ -155,6 +177,30 @@ class ProcessWebhook extends ProcessWebhookJob
     }
 
     /**
+     * Handle an order sync event (paid/refunded).
+     *
+     * @param  array<string, mixed>  $data
+     * @param  class-string  $eventClass
+     */
+    private function handleOrderSyncEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string
+    {
+        $billable = $this->resolveBillable($data);
+
+        if (!($order = $this->findOrder($data['id'])) instanceof EloquentOrder) {
+            return "Order not found: {$data['id']}";
+        }
+
+        $order->sync($data);
+
+        $sdkOrder = $this->arrayToComponent($data, Components\Order::class);
+        $payloadClass = $this->orderPayloadClass($type);
+        $payload = new $payloadClass($timestamp, $sdkOrder, $type);
+        $eventClass::dispatch($billable, $order, $payload);
+
+        return null;
+    }
+
+    /**
      * Handle the subscription created event.
      *
      * @param  array<string, mixed>  $data
@@ -218,7 +264,22 @@ class ProcessWebhook extends ProcessWebhookJob
             'subscription.updated' => Components\WebhookSubscriptionUpdatedPayload::class,
             'subscription.active' => Components\WebhookSubscriptionActivePayload::class,
             'subscription.canceled' => Components\WebhookSubscriptionCanceledPayload::class,
+            'subscription.uncanceled' => Components\WebhookSubscriptionUncanceledPayload::class,
+            'subscription.past_due' => Components\WebhookSubscriptionPastDuePayload::class,
             default => Components\WebhookSubscriptionRevokedPayload::class,
+        };
+    }
+
+    /**
+     * Resolve the webhook payload class for an order event type.
+     *
+     * @return class-string
+     */
+    private function orderPayloadClass(string $type): string
+    {
+        return match ($type) {
+            'order.paid' => Components\WebhookOrderPaidPayload::class,
+            default => Components\WebhookOrderRefundedPayload::class,
         };
     }
 
@@ -236,6 +297,7 @@ class ProcessWebhook extends ProcessWebhookJob
         $payloadClass = match ($type) {
             'benefit_grant.created' => Components\WebhookBenefitGrantCreatedPayload::class,
             'benefit_grant.updated' => Components\WebhookBenefitGrantUpdatedPayload::class,
+            'benefit_grant.cycled' => Components\WebhookBenefitGrantCycledPayload::class,
             default => Components\WebhookBenefitGrantRevokedPayload::class,
         };
         $payload = new $payloadClass($timestamp, $benefitGrant, $type);
@@ -276,6 +338,12 @@ class ProcessWebhook extends ProcessWebhookJob
             'customer.updated' => Components\WebhookCustomerUpdatedPayload::class,
             'customer.deleted' => Components\WebhookCustomerDeletedPayload::class,
             'customer.state_changed' => Components\WebhookCustomerStateChangedPayload::class,
+            'customer_seat.assigned' => Components\WebhookCustomerSeatAssignedPayload::class,
+            'customer_seat.claimed' => Components\WebhookCustomerSeatClaimedPayload::class,
+            'customer_seat.revoked' => Components\WebhookCustomerSeatRevokedPayload::class,
+            'refund.created' => Components\WebhookRefundCreatedPayload::class,
+            'refund.updated' => Components\WebhookRefundUpdatedPayload::class,
+            'organization.updated' => Components\WebhookOrganizationUpdatedPayload::class,
             'product.created' => Components\WebhookProductCreatedPayload::class,
             default => Components\WebhookProductUpdatedPayload::class,
         };
@@ -348,27 +416,10 @@ class ProcessWebhook extends ProcessWebhookJob
         return LaravelPolar::$orderModel::firstWhere('polar_id', $orderId);
     }
 
-    private function parseTimestamp($timestampValue): \DateTime
+    private function parseTimestamp(mixed $timestampValue): \DateTime
     {
         if ($timestampValue === null) {
             return new \DateTime();
-        }
-
-        $parsed = \DateTime::createFromFormat(\DateTime::ATOM, $timestampValue);
-        if ($parsed !== false) {
-            return $parsed;
-        }
-
-        $parsed = \DateTime::createFromFormat('Y-m-d\TH:i:s.u\Z', $timestampValue);
-        if ($parsed !== false) {
-            return $parsed;
-        }
-
-        $timestamp = strtotime($timestampValue);
-        if ($timestamp !== false) {
-            $dateTime = new \DateTime();
-            $dateTime->setTimestamp($timestamp);
-            return $dateTime;
         }
 
         try {
@@ -400,45 +451,41 @@ class ProcessWebhook extends ProcessWebhookJob
         return $this->getSerializer()->deserialize($json, $class, 'json');
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function arrayToBenefitGrant(array $data): Components\BenefitGrantDiscordWebhook|Components\BenefitGrantCustomWebhook|Components\BenefitGrantGitHubRepositoryWebhook|Components\BenefitGrantDownloadablesWebhook|Components\BenefitGrantLicenseKeysWebhook|Components\BenefitGrantMeterCreditWebhook
     {
         $type = $data['type'] ?? $data['benefit']['type'] ?? 'custom';
-        $json = json_encode($data);
-        if ($json === false) {
-            throw new \RuntimeException('Failed to encode benefit grant data to JSON: ' . json_last_error_msg());
-        }
 
-        $serializer = $this->getSerializer();
-
-        return match ($type) {
-            'discord' => $serializer->deserialize($json, Components\BenefitGrantDiscordWebhook::class, 'json'),
-            'custom' => $serializer->deserialize($json, Components\BenefitGrantCustomWebhook::class, 'json'),
-            'github_repository' => $serializer->deserialize($json, Components\BenefitGrantGitHubRepositoryWebhook::class, 'json'),
-            'downloadables' => $serializer->deserialize($json, Components\BenefitGrantDownloadablesWebhook::class, 'json'),
-            'license_keys' => $serializer->deserialize($json, Components\BenefitGrantLicenseKeysWebhook::class, 'json'),
-            'meter_credit' => $serializer->deserialize($json, Components\BenefitGrantMeterCreditWebhook::class, 'json'),
-            default => $serializer->deserialize($json, Components\BenefitGrantCustomWebhook::class, 'json'),
+        $class = match ($type) {
+            'discord' => Components\BenefitGrantDiscordWebhook::class,
+            'github_repository' => Components\BenefitGrantGitHubRepositoryWebhook::class,
+            'downloadables' => Components\BenefitGrantDownloadablesWebhook::class,
+            'license_keys' => Components\BenefitGrantLicenseKeysWebhook::class,
+            'meter_credit' => Components\BenefitGrantMeterCreditWebhook::class,
+            default => Components\BenefitGrantCustomWebhook::class,
         };
+
+        return $this->arrayToComponent($data, $class);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     private function arrayToBenefit(array $data): Components\BenefitCustom|Components\BenefitDiscord|Components\BenefitGitHubRepository|Components\BenefitDownloadables|Components\BenefitLicenseKeys|Components\BenefitMeterCredit
     {
         $type = $data['type'] ?? 'custom';
-        $json = json_encode($data);
-        if ($json === false) {
-            throw new \RuntimeException('Failed to encode benefit data to JSON: ' . json_last_error_msg());
-        }
 
-        $serializer = $this->getSerializer();
-
-        return match ($type) {
-            'discord' => $serializer->deserialize($json, Components\BenefitDiscord::class, 'json'),
-            'custom' => $serializer->deserialize($json, Components\BenefitCustom::class, 'json'),
-            'github_repository' => $serializer->deserialize($json, Components\BenefitGitHubRepository::class, 'json'),
-            'downloadables' => $serializer->deserialize($json, Components\BenefitDownloadables::class, 'json'),
-            'license_keys' => $serializer->deserialize($json, Components\BenefitLicenseKeys::class, 'json'),
-            'meter_credit' => $serializer->deserialize($json, Components\BenefitMeterCredit::class, 'json'),
-            default => $serializer->deserialize($json, Components\BenefitCustom::class, 'json'),
+        $class = match ($type) {
+            'discord' => Components\BenefitDiscord::class,
+            'github_repository' => Components\BenefitGitHubRepository::class,
+            'downloadables' => Components\BenefitDownloadables::class,
+            'license_keys' => Components\BenefitLicenseKeys::class,
+            'meter_credit' => Components\BenefitMeterCredit::class,
+            default => Components\BenefitCustom::class,
         };
+
+        return $this->arrayToComponent($data, $class);
     }
 }

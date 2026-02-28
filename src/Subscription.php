@@ -4,13 +4,13 @@ namespace Climactic\LaravelPolar;
 
 use Climactic\LaravelPolar\Database\Factories\SubscriptionFactory;
 use Climactic\LaravelPolar\Exceptions\PolarApiError;
-use Polar\Models\Components\SubscriptionProrationBehavior;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Polar\Models\Components;
+use Polar\Models\Components\SubscriptionProrationBehavior;
 use Polar\Models\Components\SubscriptionStatus;
 
 /**
@@ -261,6 +261,16 @@ class Subscription extends Model
     }
 
     /**
+     * Revoke the subscription immediately.
+     */
+    public function revoke(): self
+    {
+        $request = new Components\SubscriptionRevoke();
+
+        return $this->updateAndSync($request);
+    }
+
+    /**
      * Update the subscription and sync the changes.
      *
      * @param Components\SubscriptionUpdateProduct|Components\SubscriptionCancel|Components\SubscriptionUpdateDiscount|Components\SubscriptionUpdateTrial|Components\SubscriptionUpdateSeats|Components\SubscriptionRevoke $request
@@ -309,7 +319,6 @@ class Subscription extends Model
 
         return $this;
     }
-
 
     /**
      * The attributes that should be cast.
