@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-polar` will be documented in this file.
 
+## v2.1.0 - 2026-03-01 - 2026-02-28
+
+* feat: support for polar-sh/sdk v0.8.0: multi-currency checkout, checkout.expired webhook, void order status
+
+**Full Changelog**: https://github.com/Climactic/laravel-polar/commits/v2.1.0
+
 ## v2.0.4 - 2026-02-26
 
 ### What's Changed
@@ -134,6 +140,7 @@ composer require climactic/laravel-polar:^2.0
 
 
 
+
 ```
 After installation:
 
@@ -146,11 +153,13 @@ After installation:
    
    
    
+   
    ```
 2. **Run migrations** (if any new ones exist):
    
    ```bash
    php artisan migrate
+   
    
    
    
