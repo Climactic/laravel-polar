@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar\Tests\Fixtures\Factories;
+namespace Climactic\LaravelPolar\Tests\Fixtures\Factories;
 
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 use Orchestra\Testbench\Factories\UserFactory as OrchestraUserFactory;
 
 class UserFactory extends OrchestraUserFactory

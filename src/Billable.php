@@ -1,13 +1,13 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
-use Danestves\LaravelPolar\Concerns\ManagesBenefits;
-use Danestves\LaravelPolar\Concerns\ManagesCheckouts;
-use Danestves\LaravelPolar\Concerns\ManagesCustomer;
-use Danestves\LaravelPolar\Concerns\ManagesCustomerMeters;
-use Danestves\LaravelPolar\Concerns\ManagesOrders;
-use Danestves\LaravelPolar\Concerns\ManagesSubscription;
+use Climactic\LaravelPolar\Concerns\ManagesBenefits;
+use Climactic\LaravelPolar\Concerns\ManagesCheckouts;
+use Climactic\LaravelPolar\Concerns\ManagesCustomer;
+use Climactic\LaravelPolar\Concerns\ManagesCustomerMeters;
+use Climactic\LaravelPolar\Concerns\ManagesOrders;
+use Climactic\LaravelPolar\Concerns\ManagesSubscription;
 
 trait Billable // @phpstan-ignore-line trait.unused - Billable is used in the user final code
 {

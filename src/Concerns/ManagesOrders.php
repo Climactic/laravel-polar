@@ -1,10 +1,10 @@
 <?php
 
-namespace Danestves\LaravelPolar\Concerns;
+namespace Climactic\LaravelPolar\Concerns;
 
-use Danestves\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components\OrderStatus;
-use Danestves\LaravelPolar\Order;
+use Climactic\LaravelPolar\Order;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait ManagesOrders // @phpstan-ignore-line trait.unused - ManagesOrders is used in Billable trait

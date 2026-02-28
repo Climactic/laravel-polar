@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) danestves <danestves@users.noreply.github.com>
+Copyright (c) Climactic Infotech Private Limited <oss@climactic.co>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

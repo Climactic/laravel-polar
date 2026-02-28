@@ -1,6 +1,6 @@
 <?php
 
-namespace Danestves\LaravelPolar\Events;
+namespace Climactic\LaravelPolar\Events;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;

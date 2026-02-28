@@ -6,49 +6,49 @@ All notable changes to `laravel-polar` will be documented in this file.
 
 ### What's Changed
 
-* chore(deps): bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/danestves/laravel-polar/pull/57
-* Update standard-webhooks dependency to stable version by @heyjorgedev in https://github.com/danestves/laravel-polar/pull/56
+* chore(deps): bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/climactic/laravel-polar/pull/57
+* Update standard-webhooks dependency to stable version by @heyjorgedev in https://github.com/climactic/laravel-polar/pull/56
 
 ### New Contributors
 
-* @heyjorgedev made their first contribution in https://github.com/danestves/laravel-polar/pull/56
+* @heyjorgedev made their first contribution in https://github.com/climactic/laravel-polar/pull/56
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v2.0.3...v2.0.4
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v2.0.3...v2.0.4
 
 ## v2.0.3 - 2025-12-10
 
 ### What's Changed
 
-* fix: `createCustomerSession` status code by @andrzejchmura in https://github.com/danestves/laravel-polar/pull/52
-* fix documentation about embedded checkout by @einenlum in https://github.com/danestves/laravel-polar/pull/53
-* fix: specify factories for models by @einenlum in https://github.com/danestves/laravel-polar/pull/51
+* fix: `createCustomerSession` status code by @andrzejchmura in https://github.com/climactic/laravel-polar/pull/52
+* fix documentation about embedded checkout by @einenlum in https://github.com/climactic/laravel-polar/pull/53
+* fix: specify factories for models by @einenlum in https://github.com/climactic/laravel-polar/pull/51
 
 ### New Contributors
 
-* @andrzejchmura made their first contribution in https://github.com/danestves/laravel-polar/pull/52
-* @einenlum made their first contribution in https://github.com/danestves/laravel-polar/pull/53
+* @andrzejchmura made their first contribution in https://github.com/climactic/laravel-polar/pull/52
+* @einenlum made their first contribution in https://github.com/climactic/laravel-polar/pull/53
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v2.0.2...v2.0.3
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v2.0.2...v2.0.3
 
 ## v2.0.2 - 2025-12-03
 
 ### What's Changed
 
-* fix: handle null parameters spread by @adiologydev in https://github.com/danestves/laravel-polar/pull/49
+* fix: handle null parameters spread by @adiologydev in https://github.com/climactic/laravel-polar/pull/49
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v2.0.1...v2.0.2
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v2.0.1...v2.0.2
 
 ## v2.0.1 - 2025-12-02
 
 ### What's Changed
 
-* refactor: convert empty arrays to null in metadata handling methods by @adiologydev in https://github.com/danestves/laravel-polar/pull/48
+* refactor: convert empty arrays to null in metadata handling methods by @adiologydev in https://github.com/climactic/laravel-polar/pull/48
 
 ### New Contributors
 
-* @adiologydev made their first contribution in https://github.com/danestves/laravel-polar/pull/48
+* @adiologydev made their first contribution in https://github.com/climactic/laravel-polar/pull/48
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v2.0.0...v2.0.1
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v2.0.0...v2.0.1
 
 ## v2.0.0 - 2025-12-02
 
@@ -128,7 +128,7 @@ Internal enums have been replaced with Polar SDK Components for better type safe
 To upgrade to v2.0.0:
 
 ```bash
-composer require danestves/laravel-polar:^2.0
+composer require climactic/laravel-polar:^2.0
 
 
 
@@ -211,14 +211,14 @@ For a complete list of changes, see the [CHANGELOG.md](CHANGELOG.md).
 
 - [Documentation](README.md)
 - [Migration Guide](docs/migration-v1-to-v2.md)
-- [GitHub Repository](https://github.com/danestves/laravel-polar)
+- [GitHub Repository](https://github.com/climactic/laravel-polar)
 - [Polar API Documentation](https://docs.polar.sh)
 
 ### 💬 Support
 
 If you encounter any issues during migration:
 
-1. Check the [GitHub Issues](https://github.com/danestves/laravel-polar/issues)
+1. Check the [GitHub Issues](https://github.com/climactic/laravel-polar/issues)
 2. Review the [Migration Guide](docs/migration-v1-to-v2.md)
 3. Open a new issue with details about your problem
 
@@ -227,98 +227,98 @@ If you encounter any issues during migration:
 
 **Note**: This is a major release with breaking changes. Please review the migration guide carefully before upgrading in production environments.
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.2.4...v2.0.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.2.4...v2.0.0
 
 ## v1.2.4 - 2025-10-17
 
 ### What's Changed
 
-* chore(deps): bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/danestves/laravel-polar/pull/40
+* chore(deps): bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/climactic/laravel-polar/pull/40
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v.1.2.4...v1.2.4
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v.1.2.4...v1.2.4
 
 ## v.1.2.4 - 2025-08-11
 
 ### What's Changed
 
-* Update subscription API method and subscriptionData to match Polar API by @jbardnz in https://github.com/danestves/laravel-polar/pull/38
+* Update subscription API method and subscriptionData to match Polar API by @jbardnz in https://github.com/climactic/laravel-polar/pull/38
 
 ### New Contributors
 
-* @jbardnz made their first contribution in https://github.com/danestves/laravel-polar/pull/38
+* @jbardnz made their first contribution in https://github.com/climactic/laravel-polar/pull/38
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.2.3...v.1.2.4
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.2.3...v.1.2.4
 
 ## v1.2.3 - 2025-07-23
 
 ### What's Changed
 
-* fix: ordered_at value by @jmaekki in https://github.com/danestves/laravel-polar/pull/36
+* fix: ordered_at value by @jmaekki in https://github.com/climactic/laravel-polar/pull/36
 
 ### New Contributors
 
-* @jmaekki made their first contribution in https://github.com/danestves/laravel-polar/pull/36
+* @jmaekki made their first contribution in https://github.com/climactic/laravel-polar/pull/36
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.2.2...v1.2.3
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.2.2...v1.2.3
 
 ## v1.2.2 - 2025-07-02
 
 ### What's Changed
 
-* fix: correctly transform data to array on subscription by @danestves in https://github.com/danestves/laravel-polar/pull/33
+* fix: correctly transform data to array on subscription by @danestves in https://github.com/climactic/laravel-polar/pull/33
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.2.1...v1.2.2
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.2.1...v1.2.2
 
 ## v1.2.1 - 2025-06-04
 
 ### What's Changed
 
-* fix: undefined subscription type by @danestves in https://github.com/danestves/laravel-polar/pull/30
+* fix: undefined subscription type by @danestves in https://github.com/climactic/laravel-polar/pull/30
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.2.0...v1.2.1
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.2.0...v1.2.1
 
 ## v1.2.0 - 2025-06-04
 
 ### What's Changed
 
-* chore(deps): bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 by @dependabot in https://github.com/danestves/laravel-polar/pull/27
-* feat: latest polar schema by @danestves in https://github.com/danestves/laravel-polar/pull/28
-* chore: update dependencies by @danestves in https://github.com/danestves/laravel-polar/pull/29
+* chore(deps): bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 by @dependabot in https://github.com/climactic/laravel-polar/pull/27
+* feat: latest polar schema by @danestves in https://github.com/climactic/laravel-polar/pull/28
+* chore: update dependencies by @danestves in https://github.com/climactic/laravel-polar/pull/29
 
 ### New Contributors
 
-* @dependabot made their first contribution in https://github.com/danestves/laravel-polar/pull/27
+* @dependabot made their first contribution in https://github.com/climactic/laravel-polar/pull/27
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.1.2...v1.2.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.1.2...v1.2.0
 
 ## v1.1.2 - 2025-04-10
 
 ### What's Changed
 
-* feat: add Pending status to OrderStatus enum by @danestves in https://github.com/danestves/laravel-polar/pull/21
-* fix: update taxId property to allow null values by @danestves in https://github.com/danestves/laravel-polar/pull/22
+* feat: add Pending status to OrderStatus enum by @danestves in https://github.com/climactic/laravel-polar/pull/21
+* fix: update taxId property to allow null values by @danestves in https://github.com/climactic/laravel-polar/pull/22
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.1.1...v1.1.2
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.1.1...v1.1.2
 
 ## v1.1.1 - 2025-03-16
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.1.0...v1.1.1
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.1.0...v1.1.1
 
 ## v1.1.0 - 2025-03-11
 
 ### What's Changed
 
-* feat: webhook parse and data by @danestves in https://github.com/danestves/laravel-polar/pull/17
+* feat: webhook parse and data by @danestves in https://github.com/climactic/laravel-polar/pull/17
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.0.1...v1.1.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.0.1...v1.1.0
 
 ## v1.0.1 - 2025-03-10
 
 ### What's Changed
 
-* fix: checkout payload mapping the values by @danestves in https://github.com/danestves/laravel-polar/pull/16
+* fix: checkout payload mapping the values by @danestves in https://github.com/climactic/laravel-polar/pull/16
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v1.0.0...v1.0.1
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v1.0.0...v1.0.1
 
 ## v1.0.0 - 2025-03-09
 
@@ -326,74 +326,74 @@ As of now, we have rewritten the package to entirely use API calls, it should be
 
 ### What's Changed
 
-* feat: rewrite queries to use API calls by @danestves in https://github.com/danestves/laravel-polar/pull/15
+* feat: rewrite queries to use API calls by @danestves in https://github.com/climactic/laravel-polar/pull/15
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.3.2...v1.0.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.3.2...v1.0.0
 
 ## v0.3.2 - 2025-03-07
 
 ### What's Changed
 
-* fix: read all config files by @danestves in https://github.com/danestves/laravel-polar/pull/14
+* fix: read all config files by @danestves in https://github.com/climactic/laravel-polar/pull/14
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.3.1...v0.3.2
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.3.1...v0.3.2
 
 ## v0.3.1 - 2025-03-07
 
 ### What's Changed
 
-* fix: do not throw on customer metadata by @danestves in https://github.com/danestves/laravel-polar/pull/12
+* fix: do not throw on customer metadata by @danestves in https://github.com/climactic/laravel-polar/pull/12
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.3.0...v0.3.1
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.3.0...v0.3.1
 
 ## v0.3.0 - 2025-03-07
 
 ### What's Changed
 
-* feat: update sdk to latest version by @danestves in https://github.com/danestves/laravel-polar/pull/10
-* feat: support customer external id by @danestves in https://github.com/danestves/laravel-polar/pull/11
+* feat: update sdk to latest version by @danestves in https://github.com/climactic/laravel-polar/pull/10
+* feat: support customer external id by @danestves in https://github.com/climactic/laravel-polar/pull/11
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.2.0...v0.3.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.2.0...v0.3.0
 
 ## v0.2.0 - 2025-03-03
 
 ### What's Changed
 
-* fix: customer metadata wrong assumption by @danestves in https://github.com/danestves/laravel-polar/pull/8
-* fix: correct handling of webhooks by @danestves in https://github.com/danestves/laravel-polar/pull/9
+* fix: customer metadata wrong assumption by @danestves in https://github.com/climactic/laravel-polar/pull/8
+* fix: correct handling of webhooks by @danestves in https://github.com/climactic/laravel-polar/pull/9
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.1.3...v0.2.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.1.3...v0.2.0
 
 ## v0.1.3 - 2025-02-24
 
 ### What's Changed
 
-* feat: descriptive name for embed script by @danestves in https://github.com/danestves/laravel-polar/pull/3
+* feat: descriptive name for embed script by @danestves in https://github.com/climactic/laravel-polar/pull/3
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.1.2...v0.1.3
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.1.2...v0.1.3
 
 ## v0.1.2 - 2025-02-24
 
 ### What's Changed
 
-* fix: scape the at character on js link by @danestves in https://github.com/danestves/laravel-polar/pull/2
+* fix: scape the at character on js link by @danestves in https://github.com/climactic/laravel-polar/pull/2
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.1.1...v0.1.2
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.1.1...v0.1.2
 
 ## v0.1.1 - 2025-02-24
 
 ### What's Changed
 
-* fix: namespaces and add install command by @danestves in https://github.com/danestves/laravel-polar/pull/1
+* fix: namespaces and add install command by @danestves in https://github.com/climactic/laravel-polar/pull/1
 
 ### New Contributors
 
-* @danestves made their first contribution in https://github.com/danestves/laravel-polar/pull/1
+* @danestves made their first contribution in https://github.com/climactic/laravel-polar/pull/1
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/compare/v0.1.0...v0.1.1
+**Full Changelog**: https://github.com/climactic/laravel-polar/compare/v0.1.0...v0.1.1
 
 ## v0.1.0 - 2025-02-23
 
 🍾  First version of the package, for docs, please refer to the README
 
-**Full Changelog**: https://github.com/danestves/laravel-polar/commits/v0.1.0
+**Full Changelog**: https://github.com/climactic/laravel-polar/commits/v0.1.0

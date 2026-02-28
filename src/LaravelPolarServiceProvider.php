@@ -1,9 +1,9 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
-use Danestves\LaravelPolar\Commands\ListProductsCommand;
-use Danestves\LaravelPolar\View\Components\Button;
+use Climactic\LaravelPolar\Commands\ListProductsCommand;
+use Climactic\LaravelPolar\View\Components\Button;
 use Illuminate\Support\Facades\Blade;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -31,7 +31,7 @@ class LaravelPolarServiceProvider extends PackageServiceProvider
                     ->publishMigrations()
                     ->askToRunMigrations()
                     ->copyAndRegisterServiceProviderInApp()
-                    ->askToStarRepoOnGitHub('danestves/laravel-polar');
+                    ->askToStarRepoOnGitHub('climactic/laravel-polar');
             });
     }
 

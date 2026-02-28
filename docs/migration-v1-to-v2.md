@@ -34,7 +34,7 @@ Laravel Polar v2 supports Laravel 11.x and 12.x:
 Update your `composer.json` to require Laravel Polar v2:
 
 ```bash
-composer require danestves/laravel-polar:^2.0
+composer require climactic/laravel-polar:^2.0
 ```
 
 Or manually update your `composer.json`:
@@ -42,7 +42,7 @@ Or manually update your `composer.json`:
 ```json
 {
     "require": {
-        "danestves/laravel-polar": "^2.0"
+        "climactic/laravel-polar": "^2.0"
     }
 }
 ```
@@ -50,7 +50,7 @@ Or manually update your `composer.json`:
 Then run:
 
 ```bash
-composer update danestves/laravel-polar
+composer update climactic/laravel-polar
 ```
 
 ### Step 2: Publish Updated Configuration
@@ -252,7 +252,7 @@ After upgrading, thoroughly test the following:
 ```php
 // Test checkout creation
 $checkout = $user->checkout(['product_id']);
-assert($checkout instanceof \Danestves\LaravelPolar\Checkout);
+assert($checkout instanceof \Climactic\LaravelPolar\Checkout);
 
 // Test checkout redirect
 $response = $checkout->redirect();
@@ -267,7 +267,7 @@ assert($user->subscribed() === true || $user->subscribed() === false);
 
 // Test subscription retrieval
 $subscription = $user->subscription();
-assert($subscription instanceof \Danestves\LaravelPolar\Subscription);
+assert($subscription instanceof \Climactic\LaravelPolar\Subscription);
 ```
 
 ### 3. Webhook Handling
@@ -276,7 +276,7 @@ Test that webhooks are still processed correctly:
 
 ```php
 use Illuminate\Support\Facades\Event;
-use Danestves\LaravelPolar\Events\SubscriptionCreated;
+use Climactic\LaravelPolar\Events\SubscriptionCreated;
 
 // Verify webhook is dispatched as Laravel event
 Event::fake();
@@ -321,7 +321,7 @@ assert($orders instanceof \Illuminate\Database\Eloquent\Collection);
 
 // Test customer relationship
 $customer = $user->customer;
-assert($customer instanceof \Danestves\LaravelPolar\Customer);
+assert($customer instanceof \Climactic\LaravelPolar\Customer);
 ```
 
 ## Troubleshooting
@@ -375,10 +375,10 @@ If you need to rollback to v1:
 
 ```bash
 # Update composer.json
-composer require danestves/laravel-polar:^1.0
+composer require climactic/laravel-polar:^1.0
 
 # Run composer update
-composer update danestves/laravel-polar
+composer update climactic/laravel-polar
 
 # Clear config cache
 php artisan config:clear
@@ -394,7 +394,7 @@ php artisan config:clear
 
 If you encounter any issues during migration:
 
-1. Check the [GitHub Issues](https://github.com/danestves/laravel-polar/issues)
+1. Check the [GitHub Issues](https://github.com/climactic/laravel-polar/issues)
 2. Review the [CHANGELOG](../../CHANGELOG.md)
 3. Open a new issue with details about your problem
 

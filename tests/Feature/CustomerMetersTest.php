@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Danestves\LaravelPolar\Customer;
-use Danestves\LaravelPolar\LaravelPolar;
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Customer;
+use Climactic\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 use Illuminate\Support\Facades\Config;
 use Mockery;
 use Polar\Models\Components;

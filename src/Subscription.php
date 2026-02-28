@@ -1,9 +1,9 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
-use Danestves\LaravelPolar\Database\Factories\SubscriptionFactory;
-use Danestves\LaravelPolar\Exceptions\PolarApiError;
+use Climactic\LaravelPolar\Database\Factories\SubscriptionFactory;
+use Climactic\LaravelPolar\Exceptions\PolarApiError;
 use Polar\Models\Components\SubscriptionProrationBehavior;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +26,7 @@ use Polar\Models\Components\SubscriptionStatus;
  * @property \Carbon\CarbonInterface|null $ends_at
  * @property \Carbon\CarbonInterface|null $created_at
  * @property \Carbon\CarbonInterface|null $updated_at
- * @property \Danestves\LaravelPolar\Billable $billable
+ * @property \Climactic\LaravelPolar\Billable $billable
  *
  * @mixin \Eloquent
  */

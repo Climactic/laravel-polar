@@ -1,6 +1,6 @@
 <?php
 
-use Danestves\LaravelPolar\Subscription;
+use Climactic\LaravelPolar\Subscription;
 use Polar\Models\Components\SubscriptionStatus;
 
 it('can determine if the subscription is on trial', function () {

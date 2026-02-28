@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar\Events;
+namespace Climactic\LaravelPolar\Events;
 
-use Danestves\LaravelPolar\Subscription;
+use Climactic\LaravelPolar\Subscription;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

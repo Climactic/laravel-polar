@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar\Tests;
+namespace Climactic\LaravelPolar\Tests;
 
-use Danestves\LaravelPolar\LaravelPolarServiceProvider;
+use Climactic\LaravelPolar\LaravelPolarServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,7 +20,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'Danestves\\LaravelPolar\\Database\\Factories\\' . class_basename($modelName) . 'Factory',
+            fn(string $modelName) => 'Climactic\\LaravelPolar\\Database\\Factories\\' . class_basename($modelName) . 'Factory',
         );
     }
 

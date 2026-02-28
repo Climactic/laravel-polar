@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar\Concerns;
+namespace Climactic\LaravelPolar\Concerns;
 
-use Danestves\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 use Polar\Models\Operations;
 

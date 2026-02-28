@@ -1,11 +1,11 @@
 <?php
 
-namespace Danestves\LaravelPolar\Concerns;
+namespace Climactic\LaravelPolar\Concerns;
 
-use Danestves\LaravelPolar\Customer;
-use Danestves\LaravelPolar\Exceptions\InvalidCustomer;
-use Danestves\LaravelPolar\Exceptions\PolarApiError;
-use Danestves\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\Customer;
+use Climactic\LaravelPolar\Exceptions\InvalidCustomer;
+use Climactic\LaravelPolar\Exceptions\PolarApiError;
+use Climactic\LaravelPolar\LaravelPolar;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Http\RedirectResponse;
 use Polar\Models\Components;

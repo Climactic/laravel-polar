@@ -1,10 +1,10 @@
 <?php
 
-namespace Danestves\LaravelPolar\Database\Factories;
+namespace Climactic\LaravelPolar\Database\Factories;
 
 use Carbon\CarbonInterface;
-use Danestves\LaravelPolar\Customer;
-use Danestves\LaravelPolar\Subscription;
+use Climactic\LaravelPolar\Customer;
+use Climactic\LaravelPolar\Subscription;
 use Polar\Models\Components\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

@@ -1,7 +1,7 @@
 <?php
 
-use Danestves\LaravelPolar\Customer;
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Customer;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 
 beforeEach(function () {
     \Illuminate\Database\Eloquent\Relations\Relation::enforceMorphMap([

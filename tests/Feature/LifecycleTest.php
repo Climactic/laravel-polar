@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Danestves\LaravelPolar\Customer;
+use Climactic\LaravelPolar\Customer;
 use Polar\Models\Components\OrderStatus;
 use Polar\Models\Components\SubscriptionStatus;
-use Danestves\LaravelPolar\Order;
-use Danestves\LaravelPolar\Subscription;
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Order;
+use Climactic\LaravelPolar\Subscription;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 
 beforeEach(function () {
     \Illuminate\Database\Eloquent\Relations\Relation::enforceMorphMap([

@@ -1,6 +1,6 @@
 <?php
 
-use Danestves\LaravelPolar\Checkout;
+use Climactic\LaravelPolar\Checkout;
 use Illuminate\Support\Facades\Config;
 use Polar\Models\Errors;
 use Polar\Models\Operations;

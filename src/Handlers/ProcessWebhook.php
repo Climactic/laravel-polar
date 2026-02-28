@@ -1,37 +1,37 @@
 <?php
 
-namespace Danestves\LaravelPolar\Handlers;
+namespace Climactic\LaravelPolar\Handlers;
 
 use Carbon\Carbon;
-use Danestves\LaravelPolar\Events\BenefitCreated;
+use Climactic\LaravelPolar\Events\BenefitCreated;
 use Polar\Models\Components\OrderStatus;
 use Polar\Models\Components\SubscriptionStatus;
-use Danestves\LaravelPolar\Events\BenefitGrantCreated;
-use Danestves\LaravelPolar\Events\BenefitGrantRevoked;
-use Danestves\LaravelPolar\Events\BenefitGrantUpdated;
-use Danestves\LaravelPolar\Events\BenefitUpdated;
-use Danestves\LaravelPolar\Events\CheckoutCreated;
-use Danestves\LaravelPolar\Events\CheckoutExpired;
-use Danestves\LaravelPolar\Events\CheckoutUpdated;
-use Danestves\LaravelPolar\Events\CustomerCreated;
-use Danestves\LaravelPolar\Events\CustomerDeleted;
-use Danestves\LaravelPolar\Events\CustomerStateChanged;
-use Danestves\LaravelPolar\Events\CustomerUpdated;
-use Danestves\LaravelPolar\Events\OrderCreated;
-use Danestves\LaravelPolar\Events\OrderUpdated;
-use Danestves\LaravelPolar\Events\ProductCreated;
-use Danestves\LaravelPolar\Events\ProductUpdated;
-use Danestves\LaravelPolar\Events\SubscriptionActive;
-use Danestves\LaravelPolar\Events\SubscriptionCanceled;
-use Danestves\LaravelPolar\Events\SubscriptionCreated;
-use Danestves\LaravelPolar\Events\SubscriptionRevoked;
-use Danestves\LaravelPolar\Events\SubscriptionUpdated;
-use Danestves\LaravelPolar\Events\WebhookHandled;
-use Danestves\LaravelPolar\Events\WebhookReceived;
-use Danestves\LaravelPolar\Exceptions\InvalidMetadataPayload;
-use Danestves\LaravelPolar\LaravelPolar;
-use Danestves\LaravelPolar\Order as EloquentOrder;
-use Danestves\LaravelPolar\Subscription as EloquentSubscription;
+use Climactic\LaravelPolar\Events\BenefitGrantCreated;
+use Climactic\LaravelPolar\Events\BenefitGrantRevoked;
+use Climactic\LaravelPolar\Events\BenefitGrantUpdated;
+use Climactic\LaravelPolar\Events\BenefitUpdated;
+use Climactic\LaravelPolar\Events\CheckoutCreated;
+use Climactic\LaravelPolar\Events\CheckoutExpired;
+use Climactic\LaravelPolar\Events\CheckoutUpdated;
+use Climactic\LaravelPolar\Events\CustomerCreated;
+use Climactic\LaravelPolar\Events\CustomerDeleted;
+use Climactic\LaravelPolar\Events\CustomerStateChanged;
+use Climactic\LaravelPolar\Events\CustomerUpdated;
+use Climactic\LaravelPolar\Events\OrderCreated;
+use Climactic\LaravelPolar\Events\OrderUpdated;
+use Climactic\LaravelPolar\Events\ProductCreated;
+use Climactic\LaravelPolar\Events\ProductUpdated;
+use Climactic\LaravelPolar\Events\SubscriptionActive;
+use Climactic\LaravelPolar\Events\SubscriptionCanceled;
+use Climactic\LaravelPolar\Events\SubscriptionCreated;
+use Climactic\LaravelPolar\Events\SubscriptionRevoked;
+use Climactic\LaravelPolar\Events\SubscriptionUpdated;
+use Climactic\LaravelPolar\Events\WebhookHandled;
+use Climactic\LaravelPolar\Events\WebhookReceived;
+use Climactic\LaravelPolar\Exceptions\InvalidMetadataPayload;
+use Climactic\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\Order as EloquentOrder;
+use Climactic\LaravelPolar\Subscription as EloquentSubscription;
 use Illuminate\Support\Facades\Log;
 use Polar\Models\Components;
 use Spatie\WebhookClient\Jobs\ProcessWebhookJob;
@@ -302,7 +302,7 @@ class ProcessWebhook extends ProcessWebhookJob
      * Resolve the billable from the payload.
      *
      * @param  array<string, mixed>  $payload
-     * @return \Danestves\LaravelPolar\Billable
+     * @return \Climactic\LaravelPolar\Billable
      *
      * @throws InvalidMetadataPayload
      */
@@ -324,7 +324,7 @@ class ProcessWebhook extends ProcessWebhookJob
     /**
      * Find or create a customer.
      *
-     * @return \Danestves\LaravelPolar\Billable
+     * @return \Climactic\LaravelPolar\Billable
      */
     private function findOrCreateCustomer(int|string $billableId, string $billableType, string $customerId) // @phpstan-ignore-line return.trait - Billable is used in the user final code
     {

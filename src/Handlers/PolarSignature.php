@@ -1,6 +1,6 @@
 <?php
 
-namespace Danestves\LaravelPolar\Handlers;
+namespace Climactic\LaravelPolar\Handlers;
 
 use Illuminate\Http\Request;
 use Spatie\WebhookClient\SignatureValidator\SignatureValidator;

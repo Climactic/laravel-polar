@@ -1,16 +1,11 @@
-![](https://banners.beyondco.de/laravel-polar.png?theme=dark&packageManager=composer+require&packageName=danestves%2Flaravel-polar&pattern=pieFactory&style=style_1&description=Easily+integrate+your+Laravel+application+with+Polar.sh&md=1&showWatermark=1&fontSize=100px&images=https%3A%2F%2Flaravel.com%2Fimg%2Flogomark.min.svg "Laravel Polar")
+![](https://banners.beyondco.de/Laravel%20Polar.png?theme=light&packageManager=composer+require&packageName=climactic%2Flaravel-polar&pattern=pieFactory&style=style_1&description=Polar.sh+Laravel+Integration&md=1&showWatermark=1&fontSize=100px&images=https://github.com/polarsource/polar/raw/refs/heads/main/server/polar/backoffice/static/logo.light.svg "Laravel Polar")
 
 # Laravel Polar
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/danestves/laravel-polar.svg?style=flat-square)](https://packagist.org/packages/danestves/laravel-polar)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/danestves/laravel-polar/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/danestves/laravel-polar/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/danestves/laravel-polar/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/danestves/laravel-polar/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/danestves/laravel-polar.svg?style=flat-square)](https://packagist.org/packages/danestves/laravel-polar)
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://polar.sh/embed/subscribe.svg?org=danestves-llc&label=Subscribe&darkmode">
-  <img alt="Subscribe on Polar" src="https://polar.sh/embed/subscribe.svg?org=danestves-llc&label=Subscribe" style="width: 104px;">
-</picture>
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/climactic/laravel-polar.svg?style=flat-square)](https://packagist.org/packages/climactic/laravel-polar)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/climactic/laravel-polar/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/climactic/laravel-polar/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/climactic/laravel-polar/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/climactic/laravel-polar/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/climactic/laravel-polar.svg?style=flat-square)](https://packagist.org/packages/climactic/laravel-polar)
 
 Seamlessly integrate Polar.sh subscriptions and payments into your Laravel application. This package provides an elegant way to handle subscriptions, manage recurring payments, and interact with Polar's API. With built-in support for webhooks, subscription management, and a fluent API, you can focus on building your application while we handle the complexities of subscription billing.
 
@@ -19,7 +14,7 @@ Seamlessly integrate Polar.sh subscriptions and payments into your Laravel appli
 **Step 1:** You can install the package via composer:
 
 ```bash
-composer require danestves/laravel-polar
+composer require climactic/laravel-polar
 ```
 
 **Step 2:** Run `:install`:
@@ -189,7 +184,7 @@ Let’s make sure everything’s ready for your customers to checkout smoothly. 
 First, we’ll need to set up a model to handle billing—don’t worry, it’s super simple! In most cases, this will be your app’s User model. Just add the Billable trait to your model like this (you’ll import it from the package first, of course):
 
 ```php
-use Danestves\LaravelPolar\Billable;
+use Climactic\LaravelPolar\Billable;
 
 class User extends Authenticatable
 {
@@ -672,7 +667,7 @@ Benefits are automated features that are granted to customers when they purchase
 Create benefits programmatically using the `LaravelPolar` facade:
 
 ```php
-use Danestves\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 
 $benefit = LaravelPolar::createBenefit(
@@ -713,7 +708,7 @@ $grants = $user->listBenefitGrants('benefit-id-123');
 Update an existing benefit using the `LaravelPolar` facade:
 
 ```php
-use Danestves\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 
 $benefit = LaravelPolar::updateBenefit(
@@ -785,7 +780,7 @@ $meters = $user->listCustomerMeters();
 Retrieve a specific customer meter by ID using the `LaravelPolar` facade:
 
 ```php
-use Danestves\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\LaravelPolar;
 
 $meter = LaravelPolar::getCustomerMeter('meter-id-123');
 ```
@@ -802,39 +797,39 @@ Polar can send webhooks to your app, allowing you to react. By default, this pac
 The package dispatches the following webhook events:
 
 **Order Events:**
-- `Danestves\LaravelPolar\Events\OrderCreated`
-- `Danestves\LaravelPolar\Events\OrderUpdated`
+- `Climactic\LaravelPolar\Events\OrderCreated`
+- `Climactic\LaravelPolar\Events\OrderUpdated`
 
 **Subscription Events:**
-- `Danestves\LaravelPolar\Events\SubscriptionCreated`
-- `Danestves\LaravelPolar\Events\SubscriptionUpdated`
-- `Danestves\LaravelPolar\Events\SubscriptionActive`
-- `Danestves\LaravelPolar\Events\SubscriptionCanceled`
-- `Danestves\LaravelPolar\Events\SubscriptionRevoked`
+- `Climactic\LaravelPolar\Events\SubscriptionCreated`
+- `Climactic\LaravelPolar\Events\SubscriptionUpdated`
+- `Climactic\LaravelPolar\Events\SubscriptionActive`
+- `Climactic\LaravelPolar\Events\SubscriptionCanceled`
+- `Climactic\LaravelPolar\Events\SubscriptionRevoked`
 
 **Benefit Grant Events:**
-- `Danestves\LaravelPolar\Events\BenefitGrantCreated`
-- `Danestves\LaravelPolar\Events\BenefitGrantUpdated`
-- `Danestves\LaravelPolar\Events\BenefitGrantRevoked`
+- `Climactic\LaravelPolar\Events\BenefitGrantCreated`
+- `Climactic\LaravelPolar\Events\BenefitGrantUpdated`
+- `Climactic\LaravelPolar\Events\BenefitGrantRevoked`
 
 **Checkout Events:**
-- `Danestves\LaravelPolar\Events\CheckoutCreated`
-- `Danestves\LaravelPolar\Events\CheckoutUpdated`
-- `Danestves\LaravelPolar\Events\CheckoutExpired`
+- `Climactic\LaravelPolar\Events\CheckoutCreated`
+- `Climactic\LaravelPolar\Events\CheckoutUpdated`
+- `Climactic\LaravelPolar\Events\CheckoutExpired`
 
 **Customer Events:**
-- `Danestves\LaravelPolar\Events\CustomerCreated`
-- `Danestves\LaravelPolar\Events\CustomerUpdated`
-- `Danestves\LaravelPolar\Events\CustomerDeleted`
-- `Danestves\LaravelPolar\Events\CustomerStateChanged`
+- `Climactic\LaravelPolar\Events\CustomerCreated`
+- `Climactic\LaravelPolar\Events\CustomerUpdated`
+- `Climactic\LaravelPolar\Events\CustomerDeleted`
+- `Climactic\LaravelPolar\Events\CustomerStateChanged`
 
 **Product Events:**
-- `Danestves\LaravelPolar\Events\ProductCreated`
-- `Danestves\LaravelPolar\Events\ProductUpdated`
+- `Climactic\LaravelPolar\Events\ProductCreated`
+- `Climactic\LaravelPolar\Events\ProductUpdated`
 
 **Benefit Events:**
-- `Danestves\LaravelPolar\Events\BenefitCreated`
-- `Danestves\LaravelPolar\Events\BenefitUpdated`
+- `Climactic\LaravelPolar\Events\BenefitCreated`
+- `Climactic\LaravelPolar\Events\BenefitUpdated`
 
 Each of these events has a `$payload` property containing the webhook payload. Some events also expose convenience properties for direct access to related models:
 
@@ -883,7 +878,7 @@ Create individual listener classes for each event:
 
 namespace App\Listeners;
 
-use Danestves\LaravelPolar\Events\CheckoutCreated;
+use Climactic\LaravelPolar\Events\CheckoutCreated;
 
 class HandleCheckoutCreated
 {
@@ -900,7 +895,7 @@ class HandleCheckoutCreated
 
 namespace App\Listeners;
 
-use Danestves\LaravelPolar\Events\SubscriptionUpdated;
+use Climactic\LaravelPolar\Events\SubscriptionUpdated;
 
 class HandleSubscriptionUpdated
 {
@@ -921,9 +916,9 @@ Alternatively, you can use a single listener class with multiple methods. For th
 
 namespace App\Listeners;
 
-use Danestves\LaravelPolar\Events\CheckoutCreated;
-use Danestves\LaravelPolar\Events\SubscriptionUpdated;
-use Danestves\LaravelPolar\Events\WebhookHandled;
+use Climactic\LaravelPolar\Events\CheckoutCreated;
+use Climactic\LaravelPolar\Events\SubscriptionUpdated;
+use Climactic\LaravelPolar\Events\WebhookHandled;
 use Illuminate\Events\Dispatcher;
 
 class PolarEventListener
@@ -993,9 +988,9 @@ namespace App\Providers;
 use App\Listeners\HandleCheckoutCreated;
 use App\Listeners\HandleSubscriptionUpdated;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Danestves\LaravelPolar\Events\CheckoutCreated;
-use Danestves\LaravelPolar\Events\SubscriptionUpdated;
-use Danestves\LaravelPolar\Events\WebhookHandled;
+use Climactic\LaravelPolar\Events\CheckoutCreated;
+use Climactic\LaravelPolar\Events\SubscriptionUpdated;
+use Climactic\LaravelPolar\Events\WebhookHandled;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -1058,6 +1053,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
+- [danestves](https://github.com/danestves) — original author of [danestves/laravel-polar](https://github.com/danestves/laravel-polar)
 - [laravel/cashier (Stripe)](https://github.com/laravel/cashier-stripe)
 - [laravel/cashier (Paddle)](https://github.com/laravel/cashier-paddle)
 - [lemonsqueezy/laravel](https://github.com/lmsqueezy/laravel)

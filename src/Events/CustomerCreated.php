@@ -1,6 +1,6 @@
 <?php
 
-namespace Danestves\LaravelPolar\Events;
+namespace Climactic\LaravelPolar\Events;
 
 use Polar\Models\Components\WebhookCustomerCreatedPayload;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Danestves\LaravelPolar\Database\Factories;
+namespace Climactic\LaravelPolar\Database\Factories;
 
-use Danestves\LaravelPolar\Customer;
-use Danestves\LaravelPolar\Order;
+use Climactic\LaravelPolar\Customer;
+use Climactic\LaravelPolar\Order;
 use Polar\Models\Components\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

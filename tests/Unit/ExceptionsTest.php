@@ -1,10 +1,10 @@
 <?php
 
-use Danestves\LaravelPolar\Exceptions\InvalidCustomer;
-use Danestves\LaravelPolar\Exceptions\InvalidMetadataPayload;
-use Danestves\LaravelPolar\Exceptions\PolarApiError;
-use Danestves\LaravelPolar\Exceptions\ReservedMetadataKeys;
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Exceptions\InvalidCustomer;
+use Climactic\LaravelPolar\Exceptions\InvalidMetadataPayload;
+use Climactic\LaravelPolar\Exceptions\PolarApiError;
+use Climactic\LaravelPolar\Exceptions\ReservedMetadataKeys;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 
 it('can create InvalidCustomer exception', function () {
     $user = User::factory()->create();

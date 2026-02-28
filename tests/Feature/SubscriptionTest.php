@@ -1,8 +1,8 @@
 <?php
 
-use Danestves\LaravelPolar\Exceptions\PolarApiError;
+use Climactic\LaravelPolar\Exceptions\PolarApiError;
 use Polar\Models\Components\SubscriptionStatus;
-use Danestves\LaravelPolar\Subscription;
+use Climactic\LaravelPolar\Subscription;
 use Illuminate\Support\Facades\Config;
 
 beforeEach(function () {

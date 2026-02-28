@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
-use Danestves\LaravelPolar\Database\Factories\CustomerFactory;
+use Climactic\LaravelPolar\Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property \Carbon\CarbonInterface|null $created_at
  * @property \Carbon\CarbonInterface|null $updated_at
  * @property \Carbon\CarbonInterface|null $trial_ends_at
- * @property \Danestves\LaravelPolar\Billable $billable
+ * @property \Climactic\LaravelPolar\Billable $billable
  *
  * @mixin \Eloquent
  */

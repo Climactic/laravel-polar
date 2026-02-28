@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar\Concerns;
+namespace Climactic\LaravelPolar\Concerns;
 
-use Danestves\LaravelPolar\Checkout;
+use Climactic\LaravelPolar\Checkout;
 use Illuminate\Support\Facades\Log;
 use Polar\Models\Components;
 

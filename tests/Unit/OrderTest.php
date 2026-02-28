@@ -1,8 +1,8 @@
 <?php
 
-use Danestves\LaravelPolar\Order as PolarOrder;
+use Climactic\LaravelPolar\Order as PolarOrder;
 use Polar\Models\Components\OrderStatus;
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 
 beforeEach(function () {
     \Illuminate\Database\Eloquent\Relations\Relation::enforceMorphMap([

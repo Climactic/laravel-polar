@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Danestves\LaravelPolar\Checkout;
-use Danestves\LaravelPolar\Customer;
-use Danestves\LaravelPolar\Tests\Fixtures\User;
+use Climactic\LaravelPolar\Checkout;
+use Climactic\LaravelPolar\Customer;
+use Climactic\LaravelPolar\Tests\Fixtures\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Config;
 use Mockery;
@@ -69,7 +69,7 @@ it('throws exception when generating customer portal link without customer', fun
     $user = User::factory()->create();
 
     expect(fn() => $user->customerPortalUrl())
-        ->toThrow(\Danestves\LaravelPolar\Exceptions\InvalidCustomer::class);
+        ->toThrow(\Climactic\LaravelPolar\Exceptions\InvalidCustomer::class);
 });
 
 it('throws exception when generating customer portal link without polar_id', function () {
@@ -81,7 +81,7 @@ it('throws exception when generating customer portal link without polar_id', fun
     ]);
 
     expect(fn() => $user->customerPortalUrl())
-        ->toThrow(\Danestves\LaravelPolar\Exceptions\InvalidCustomer::class);
+        ->toThrow(\Climactic\LaravelPolar\Exceptions\InvalidCustomer::class);
 });
 
 it('can determine the generic trial on a billable', function () {
@@ -100,7 +100,7 @@ it('can check if billable is subscribed', function () {
         'billable_type' => $user->getMorphClass(),
     ]);
 
-    $subscription = \Danestves\LaravelPolar\Subscription::factory()->active()->create([
+    $subscription = \Climactic\LaravelPolar\Subscription::factory()->active()->create([
         'billable_id' => $user->getKey(),
         'billable_type' => $user->getMorphClass(),
         'product_id' => 'product_123',
@@ -123,7 +123,7 @@ it('can check if billable has purchased a product', function () {
         'billable_type' => $user->getMorphClass(),
     ]);
 
-    \Danestves\LaravelPolar\Order::factory()->paid()->create([
+    \Climactic\LaravelPolar\Order::factory()->paid()->create([
         'billable_id' => $user->getKey(),
         'billable_type' => $user->getMorphClass(),
         'product_id' => 'product_123',

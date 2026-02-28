@@ -1,6 +1,6 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
 use Exception;
 use Polar\Models\Components;

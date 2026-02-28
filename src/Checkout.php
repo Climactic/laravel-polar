@@ -1,6 +1,6 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
 use DateTime;
 use Illuminate\Contracts\Support\Responsable;

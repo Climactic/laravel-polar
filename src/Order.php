@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar;
+namespace Climactic\LaravelPolar;
 
-use Danestves\LaravelPolar\Database\Factories\OrderFactory;
+use Climactic\LaravelPolar\Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Polar\Models\Components\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property \Carbon\CarbonInterface $ordered_at
  * @property \Carbon\CarbonInterface|null $created_at
  * @property \Carbon\CarbonInterface|null $updated_at
- * @property \Danestves\LaravelPolar\Billable $billable
+ * @property \Climactic\LaravelPolar\Billable $billable
  *
  * @mixin \Eloquent
  */

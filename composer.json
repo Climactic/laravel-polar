@@ -1,5 +1,5 @@
 {
-    "name": "danestves/laravel-polar",
+    "name": "climactic/laravel-polar",
     "description": "A package to easily integrate your Laravel application with Polar.sh",
     "keywords": [
         "laravel",
@@ -7,12 +7,12 @@
         "billing",
         "subscription"
     ],
-    "homepage": "https://github.com/danestves/laravel-polar",
+    "homepage": "https://github.com/climactic/laravel-polar",
     "license": "MIT",
     "authors": [
         {
-            "name": "danestves",
-            "email": "danestves@users.noreply.github.com",
+            "name": "climactic",
+            "email": "oss@climactic.co",
             "role": "Developer"
         }
     ],
@@ -42,13 +42,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Danestves\\LaravelPolar\\": "src/",
-            "Danestves\\LaravelPolar\\Database\\Factories\\": "database/factories/"
+            "Climactic\\LaravelPolar\\": "src/",
+            "Climactic\\LaravelPolar\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Danestves\\LaravelPolar\\Tests\\": "tests/",
+            "Climactic\\LaravelPolar\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",
             "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
@@ -87,10 +87,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Danestves\\LaravelPolar\\LaravelPolarServiceProvider"
+                "Climactic\\LaravelPolar\\LaravelPolarServiceProvider"
             ],
             "aliases": {
-                "LaravelPolar": "Danestves\\LaravelPolar\\Facades\\LaravelPolar"
+                "LaravelPolar": "Climactic\\LaravelPolar\\Facades\\LaravelPolar"
             }
         }
     },

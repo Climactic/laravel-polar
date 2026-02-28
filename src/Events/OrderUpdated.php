@@ -1,8 +1,8 @@
 <?php
 
-namespace Danestves\LaravelPolar\Events;
+namespace Climactic\LaravelPolar\Events;
 
-use Danestves\LaravelPolar\Order;
+use Climactic\LaravelPolar\Order;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

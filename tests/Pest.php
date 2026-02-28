@@ -1,7 +1,7 @@
 <?php
 
-use Danestves\LaravelPolar\LaravelPolar;
-use Danestves\LaravelPolar\Tests\TestCase;
+use Climactic\LaravelPolar\LaravelPolar;
+use Climactic\LaravelPolar\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
 

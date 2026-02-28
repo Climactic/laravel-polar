@@ -1,11 +1,11 @@
 <?php
 
-namespace Danestves\LaravelPolar\Tests\Fixtures;
+namespace Climactic\LaravelPolar\Tests\Fixtures;
 
-use Danestves\LaravelPolar\Billable;
+use Climactic\LaravelPolar\Billable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Danestves\LaravelPolar\Tests\Fixtures\Factories\UserFactory;
+use Climactic\LaravelPolar\Tests\Fixtures\Factories\UserFactory;
 
 class User extends Model
 {
