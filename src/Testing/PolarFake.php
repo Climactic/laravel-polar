@@ -78,7 +78,7 @@ class PolarFake
     {
         PHPUnit::assertTrue(
             isset($this->calls[$method]) && count($this->calls[$method]) > 0,
-            "Expected [{$method}] to be called, but it was not."
+            "Expected [{$method}] to be called, but it was not.",
         );
 
         return $this;
@@ -91,7 +91,7 @@ class PolarFake
     {
         PHPUnit::assertTrue(
             ! isset($this->calls[$method]) || count($this->calls[$method]) === 0,
-            "Unexpected call to [{$method}]."
+            "Unexpected call to [{$method}].",
         );
 
         return $this;
@@ -106,7 +106,7 @@ class PolarFake
     {
         PHPUnit::assertTrue(
             isset($this->calls[$method]) && count($this->calls[$method]) > 0,
-            "Expected [{$method}] to be called, but it was not."
+            "Expected [{$method}] to be called, but it was not.",
         );
 
         $matched = false;
@@ -132,7 +132,7 @@ class PolarFake
         PHPUnit::assertSame(
             $times,
             $actual,
-            "Expected [{$method}] to be called {$times} times, but was called {$actual} times."
+            "Expected [{$method}] to be called {$times} times, but was called {$actual} times.",
         );
 
         return $this;

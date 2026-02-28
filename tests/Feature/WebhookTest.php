@@ -427,7 +427,7 @@ it('dispatches WebhookSkipped for unknown webhook event types', function () {
     $job->handle();
 
     Event::assertDispatched(WebhookReceived::class);
-    Event::assertDispatched(WebhookSkipped::class, fn (WebhookSkipped $e) => str_contains($e->reason, 'Unknown event type'));
+    Event::assertDispatched(WebhookSkipped::class, fn(WebhookSkipped $e) => str_contains($e->reason, 'Unknown event type'));
     Event::assertNotDispatched(WebhookHandled::class);
     Event::assertNotDispatched(OrderCreated::class);
     Event::assertNotDispatched(SubscriptionCreated::class);
@@ -466,7 +466,7 @@ it('dispatches WebhookSkipped when order.updated references nonexistent order', 
 
     expect(Order::where('polar_id', 'nonexistent_order')->exists())->toBeFalse();
     Event::assertNotDispatched(OrderUpdated::class);
-    Event::assertDispatched(WebhookSkipped::class, fn (WebhookSkipped $e) => str_contains($e->reason, 'Order not found'));
+    Event::assertDispatched(WebhookSkipped::class, fn(WebhookSkipped $e) => str_contains($e->reason, 'Order not found'));
     Event::assertNotDispatched(WebhookHandled::class);
 });
 
@@ -488,7 +488,7 @@ it('dispatches WebhookSkipped when subscription.updated references nonexistent s
 
     expect(Subscription::where('polar_id', 'nonexistent_subscription')->exists())->toBeFalse();
     Event::assertNotDispatched(SubscriptionUpdated::class);
-    Event::assertDispatched(WebhookSkipped::class, fn (WebhookSkipped $e) => str_contains($e->reason, 'Subscription not found'));
+    Event::assertDispatched(WebhookSkipped::class, fn(WebhookSkipped $e) => str_contains($e->reason, 'Subscription not found'));
     Event::assertNotDispatched(WebhookHandled::class);
 });
 
