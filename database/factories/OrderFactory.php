@@ -63,10 +63,10 @@ class OrderFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function ($order) {
-            Customer::factory()->create([
+            Customer::firstOrCreate([
                 'billable_id' => $order->billable_id,
                 'billable_type' => $order->billable_type,
-            ]);
+            ], Customer::factory()->raw());
         });
     }
 

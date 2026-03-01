@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Validator;
 use Polar\Models\Components;
 use Polar\Models\Operations;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputOption;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\spin;
@@ -65,7 +64,7 @@ class ListProductsCommand extends Command
     protected function validate(): bool
     {
         $validator = Validator::make([
-            ...config('polar'),
+            'access_token' => config('polar.access_token'),
         ], [
             'access_token' => 'required',
         ], [
@@ -164,23 +163,4 @@ class ListProductsCommand extends Command
         return $mapped;
     }
 
-    /**
-    * Get the console command options.
-    *
-    * @return array
-    */
-    protected function getOptions()
-    {
-        return [
-            ['id', null, InputOption::VALUE_IS_ARRAY, 'Filter by a single product id or multiple product ids.'],
-            ['organization-id', null, InputOption::VALUE_IS_ARRAY, 'Filter by a single organization id or multiple organization ids.'],
-            ['query', null, InputOption::VALUE_REQUIRED, 'Filter by product name.'],
-            ['archived', null, InputOption::VALUE_NONE, 'Filter on archived products.'],
-            ['recurring', null, InputOption::VALUE_NONE, 'Filter on recurring products.'],
-            ['benefit-id', null, InputOption::VALUE_IS_ARRAY, 'Filter by a single benefit id or multiple benefit ids.'],
-            ['page', null, InputOption::VALUE_NONE, 'Page number, defaults to 1.'],
-            ['limit', null, InputOption::VALUE_NONE, 'Size of a page, defaults to 10. Maximum is 100.'],
-            ['sorting', null, InputOption::VALUE_IS_ARRAY, 'Sorting criterion. Several criteria can be used simultaneously and will be applied in order. Add a minus sign - before the criteria name to sort by descending order. Available options: created_at, -created_at, name, -name, price_amount_type, -price_amount_type, price_amount, -price_amount'],
-        ];
-    }
 }

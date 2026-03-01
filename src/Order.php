@@ -2,7 +2,7 @@
 
 namespace Climactic\LaravelPolar;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Climactic\LaravelPolar\Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -176,7 +176,7 @@ class Order extends Model
      *
      * @throws \RuntimeException if the order has no polar_id
      */
-    public function refund(int $amount, ?RefundReason $reason = null): Refund
+    public function issueRefund(int $amount, ?RefundReason $reason = null): Refund
     {
         if ($this->polar_id === null) {
             throw new \RuntimeException('Cannot refund an order without a polar_id.');
@@ -209,8 +209,8 @@ class Order extends Model
             'billing_reason' => $attributes['billing_reason'],
             'customer_id' => $attributes['customer_id'],
             'product_id' => $attributes['product_id'],
-            'refunded_at' => isset($attributes['refunded_at']) ? Carbon::parse($attributes['refunded_at']) : null,
-            'ordered_at' => Carbon::parse($attributes['created_at']),
+            'refunded_at' => isset($attributes['refunded_at']) ? Carbon::make($attributes['refunded_at']) : null,
+            'ordered_at' => Carbon::make($attributes['created_at']),
         ]);
 
         return $this;

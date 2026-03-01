@@ -2,7 +2,7 @@
 
 namespace Climactic\LaravelPolar\Handlers;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Climactic\LaravelPolar\Events\BenefitCreated;
 use Climactic\LaravelPolar\Events\BenefitGrantCreated;
 use Climactic\LaravelPolar\Events\BenefitGrantCycled;
@@ -70,6 +70,10 @@ class ProcessWebhook extends ProcessWebhookJob
             return;
         }
         $payload = $decoded['payload'];
+        if (!isset($payload['type'], $payload['data'])) {
+            Log::error('Invalid webhook payload: missing type or data');
+            return;
+        }
         $type = $payload['type'];
         $data = $payload['data'];
         $timestamp = $this->parseTimestamp($payload['timestamp'] ?? null);
@@ -78,8 +82,14 @@ class ProcessWebhook extends ProcessWebhookJob
 
         $customHandlers = config('polar.webhook_handlers', []);
         if (isset($customHandlers[$type])) {
-            /** @var WebhookHandler $handler */
             $handler = app($customHandlers[$type]);
+
+            if (! $handler instanceof WebhookHandler) {
+                throw new \InvalidArgumentException(
+                    sprintf('Webhook handler [%s] must implement %s.', $customHandlers[$type], WebhookHandler::class),
+                );
+            }
+
             $skippedReason = $handler->handle($data, $timestamp, $type);
 
             if ($skippedReason !== null) {
@@ -170,10 +180,14 @@ class ProcessWebhook extends ProcessWebhookJob
      */
     private function handleOrderUpdated(array $data, \DateTime $timestamp, string $type): ?string
     {
-        $billable = $this->resolveBillable($data);
-
         if (!($order = $this->findOrder($data['id'])) instanceof EloquentOrder) {
             return "Order not found: {$data['id']}";
+        }
+
+        try {
+            $billable = $this->resolveBillable($data);
+        } catch (InvalidMetadataPayload) {
+            $billable = $order->billable;
         }
 
         $status = $data['status'];
@@ -200,10 +214,14 @@ class ProcessWebhook extends ProcessWebhookJob
      */
     private function handleOrderSyncEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string
     {
-        $billable = $this->resolveBillable($data);
-
         if (!($order = $this->findOrder($data['id'])) instanceof EloquentOrder) {
             return "Order not found: {$data['id']}";
+        }
+
+        try {
+            $billable = $this->resolveBillable($data);
+        } catch (InvalidMetadataPayload) {
+            $billable = $order->billable;
         }
 
         $order->sync($data);
@@ -226,18 +244,18 @@ class ProcessWebhook extends ProcessWebhookJob
         $customerMetadata = $data['customer']['metadata'];
         $billable = $this->resolveBillable($data);
 
-        $subscription = $billable->subscriptions()->create([
+        $subscription = $billable->subscriptions()->firstOrCreate(['polar_id' => $data['id']], [
             'type' => $customerMetadata['subscription_type'] ?? 'default',
-            'polar_id' => $data['id'],
             'status' => \is_string($data['status']) ? SubscriptionStatus::from($data['status']) : $data['status'],
             'product_id' => $data['product_id'],
             'current_period_end' => $data['current_period_end'] ? Carbon::make($data['current_period_end']) : null,
-            'trial_ends_at' => isset($data['trial_ends_at']) ? Carbon::make($data['trial_ends_at']) : null,
+            'trial_ends_at' => isset($data['trial_end']) ? Carbon::make($data['trial_end']) : null,
             'ends_at' => $data['ends_at'] ? Carbon::make($data['ends_at']) : null,
         ]);
 
-        if ($billable->customer->polar_id === null) {
-            $billable->customer->update(['polar_id' => $data['customer_id']]);
+        $customer = $billable->customer()->first();
+        if ($customer !== null && $customer->polar_id === null) {
+            $customer->update(['polar_id' => $data['customer_id']]);
         }
 
         $sdkSubscription = $this->arrayToComponent($data, Components\Subscription::class);
@@ -305,9 +323,13 @@ class ProcessWebhook extends ProcessWebhookJob
      * @param  array<string, mixed>  $data
      * @param  class-string  $eventClass
      */
-    private function handleBenefitGrantEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string // @phpstan-ignore return.unusedType
+    private function handleBenefitGrantEvent(array $data, \DateTime $timestamp, string $type, string $eventClass): ?string
     {
-        $billable = $this->resolveBillable($data);
+        try {
+            $billable = $this->resolveBillable($data);
+        } catch (InvalidMetadataPayload) {
+            return "Missing billable metadata for benefit grant: {$data['id']}";
+        }
 
         $benefitGrant = $this->arrayToBenefitGrant($data);
         $payloadClass = match ($type) {

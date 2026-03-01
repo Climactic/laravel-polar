@@ -54,6 +54,8 @@ class PolarFake
      */
     public function stub(string $method, mixed $value): self
     {
+        self::guardMethodExists($method);
+
         $this->stubs[$method] = $value;
 
         return $this;
@@ -76,6 +78,8 @@ class PolarFake
      */
     public function assertCalled(string $method): self
     {
+        self::guardMethodExists($method);
+
         PHPUnit::assertTrue(
             isset($this->calls[$method]) && count($this->calls[$method]) > 0,
             "Expected [{$method}] to be called, but it was not.",
@@ -89,6 +93,8 @@ class PolarFake
      */
     public function assertNotCalled(string $method): self
     {
+        self::guardMethodExists($method);
+
         PHPUnit::assertTrue(
             ! isset($this->calls[$method]) || count($this->calls[$method]) === 0,
             "Unexpected call to [{$method}].",
@@ -104,6 +110,8 @@ class PolarFake
      */
     public function assertCalledWith(string $method, callable $callback): self
     {
+        self::guardMethodExists($method);
+
         PHPUnit::assertTrue(
             isset($this->calls[$method]) && count($this->calls[$method]) > 0,
             "Expected [{$method}] to be called, but it was not.",
@@ -127,6 +135,8 @@ class PolarFake
      */
     public function assertCalledTimes(string $method, int $times): self
     {
+        self::guardMethodExists($method);
+
         $actual = isset($this->calls[$method]) ? count($this->calls[$method]) : 0;
 
         PHPUnit::assertSame(
@@ -148,5 +158,15 @@ class PolarFake
         PHPUnit::assertSame(0, $totalCalls, "Expected no methods to be called, but {$totalCalls} calls were recorded.");
 
         return $this;
+    }
+
+    /**
+     * Ensure the method exists on LaravelPolar.
+     */
+    private static function guardMethodExists(string $method): void
+    {
+        if (! method_exists(LaravelPolar::class, $method)) {
+            throw new \InvalidArgumentException("Method [{$method}] does not exist on " . LaravelPolar::class . '.');
+        }
     }
 }

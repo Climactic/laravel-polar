@@ -57,30 +57,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Redirect URL
-    |--------------------------------------------------------------------------
-    |
-    | This is the default redirect URL that will be used when a customer
-    | is redirected back to your application after completing a purchase
-    | from a checkout session in your Polar account.
-    |
-    */
-    'redirect_url' => null,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Currency Locale
-    |--------------------------------------------------------------------------
-    |
-    | This is the default locale in which your money values are formatted in
-    | for display. To utilize other locales besides the default "en" locale
-    | verify you have to have the "intl" PHP extension installed on the system.
-    |
-    */
-    'currency_locale' => env('POLAR_CURRENCY_LOCALE', 'en'),
-
-    /*
-    |--------------------------------------------------------------------------
     | Middleware Redirect URL
     |--------------------------------------------------------------------------
     |

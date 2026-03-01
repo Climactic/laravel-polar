@@ -314,7 +314,7 @@ class Subscription extends Model
             'status' => \is_string($attributes['status']) ? SubscriptionStatus::from($attributes['status']) : $attributes['status'],
             'product_id' => $attributes['product_id'],
             'current_period_end' => isset($attributes['current_period_end']) ? Carbon::make($attributes['current_period_end']) : null,
-            'trial_ends_at' => isset($attributes['trial_ends_at']) ? Carbon::make($attributes['trial_ends_at']) : null,
+            'trial_ends_at' => isset($attributes['trial_end']) ? Carbon::make($attributes['trial_end']) : null,
             'ends_at' => isset($attributes['ends_at']) ? Carbon::make($attributes['ends_at']) : null,
         ]);
 

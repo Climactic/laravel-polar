@@ -140,6 +140,25 @@ it('renders else block when no user is authenticated for @subscribed', function 
     $view->assertSee('Not Active');
 });
 
+it('renders @onTrial block with explicit billable and type', function () {
+    $user = User::factory()->create();
+    Customer::factory()->create([
+        'billable_id' => $user->getKey(),
+        'billable_type' => $user->getMorphClass(),
+    ]);
+    Subscription::factory()->create([
+        'billable_id' => $user->getKey(),
+        'billable_type' => $user->getMorphClass(),
+        'type' => 'pro',
+        'status' => \Polar\Models\Components\SubscriptionStatus::Trialing,
+        'product_id' => 'product_123',
+    ]);
+
+    $view = $this->blade('@onTrial($user, \'pro\') Trialing @else Not Trialing @endonTrial', ['user' => $user]);
+    $view->assertSee('Trialing');
+    $view->assertDontSee('Not Trialing');
+});
+
 it('renders else block when no user is authenticated for @onTrial', function () {
     $view = $this->blade('@onTrial Trialing @else Not Trialing @endonTrial');
     $view->assertSee('Not Trialing');

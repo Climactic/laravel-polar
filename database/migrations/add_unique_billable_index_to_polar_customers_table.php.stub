@@ -14,10 +14,16 @@ return new class extends Migration
     {
         // Remove duplicate rows before adding the unique constraint,
         // keeping only the row with the lowest id for each billable pair.
-        // Uses a derived table wrapper to avoid MySQL error 1093.
-        DB::delete(
-            'DELETE FROM polar_customers WHERE id NOT IN (SELECT keep_id FROM (SELECT MIN(id) AS keep_id FROM polar_customers GROUP BY billable_type, billable_id) AS ids_to_keep)'
-        );
+        $keepIds = DB::table('polar_customers')
+            ->selectRaw('MIN(id) as keep_id')
+            ->groupBy('billable_type', 'billable_id')
+            ->pluck('keep_id');
+
+        if ($keepIds->isNotEmpty()) {
+            DB::table('polar_customers')
+                ->whereNotIn('id', $keepIds)
+                ->delete();
+        }
 
         Schema::table('polar_customers', function (Blueprint $table) {
             $table->unique(['billable_type', 'billable_id']);

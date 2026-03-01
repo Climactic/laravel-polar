@@ -604,10 +604,10 @@ You can refund an order (requires the amount in cents):
 use Polar\Models\Components\RefundReason;
 
 // Refund a specific amount
-$refund = $order->refund(1000);
+$refund = $order->issueRefund(1000);
 
 // Refund with a reason
-$refund = $order->refund(1000, RefundReason::CustomerRequest);
+$refund = $order->issueRefund(1000, RefundReason::CustomerRequest);
 ```
 
 Or use the facade for more control:
@@ -1108,7 +1108,7 @@ LaravelPolar::deactivateLicenseKey(new Components\LicenseKeyDeactivate(
 
 #### License Keys on Billable
 
-The `Billable` trait includes license key management methods so you can validate, activate, and deactivate keys directly from your user model. These methods require the billable to have a Polar customer record.
+The `Billable` trait includes license key management methods so you can validate, activate, and deactivate keys directly from your user model.
 
 The `organization_id` is resolved from `config('polar.organization_id')` by default, so you only need to set it once in your `.env`:
 
