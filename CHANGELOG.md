@@ -2,6 +2,18 @@
 
 All notable changes to `laravel-polar` will be documented in this file.
 
+## v2.2.0 - 2026-03-02 - 2026-03-01
+
+### What's Changed
+
+* feat: add subscription middleware, blade directives, license management, and webhook handlers by @adiologydev in https://github.com/Climactic/laravel-polar/pull/1
+
+### New Contributors
+
+* @adiologydev made their first contribution in https://github.com/Climactic/laravel-polar/pull/1
+
+**Full Changelog**: https://github.com/Climactic/laravel-polar/compare/v2.1.0...v2.2.0
+
 ## v2.1.0 - 2026-03-01 - 2026-02-28
 
 * feat: support for polar-sh/sdk v0.8.0: multi-currency checkout, checkout.expired webhook, void order status
@@ -141,6 +153,7 @@ composer require climactic/laravel-polar:^2.0
 
 
 
+
 ```
 After installation:
 
@@ -154,11 +167,13 @@ After installation:
    
    
    
+   
    ```
 2. **Run migrations** (if any new ones exist):
    
    ```bash
    php artisan migrate
+   
    
    
    
