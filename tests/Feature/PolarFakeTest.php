@@ -23,7 +23,7 @@ it('can assert a method was called with specific arguments', function () {
 
     LaravelPolar::deleteBenefit('benefit_abc');
 
-    $fake->assertCalledWith('deleteBenefit', fn ($id) => $id === 'benefit_abc');
+    $fake->assertCalledWith('deleteBenefit', fn($id) => $id === 'benefit_abc');
 });
 
 it('can assert call count', function () {

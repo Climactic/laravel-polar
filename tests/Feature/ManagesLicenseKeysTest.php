@@ -23,7 +23,7 @@ afterEach(function () {
 it('throws InvalidCustomer when no customer exists for licenseKeys', function () {
     $user = User::factory()->create();
 
-    expect(fn () => $user->licenseKeys())
+    expect(fn() => $user->licenseKeys())
         ->toThrow(InvalidCustomer::class);
 });
 
@@ -35,7 +35,7 @@ it('throws InvalidCustomer when customer has no polar_id for licenseKeys', funct
         'polar_id' => null,
     ]);
 
-    expect(fn () => $user->licenseKeys())
+    expect(fn() => $user->licenseKeys())
         ->toThrow(InvalidCustomer::class);
 });
 
@@ -60,7 +60,7 @@ it('calls listLicenseKeys via the billable', function () {
 it('throws InvalidCustomer when no customer exists for validateLicenseKey', function () {
     $user = User::factory()->create();
 
-    expect(fn () => $user->validateLicenseKey('LK-abc', 'org_123'))
+    expect(fn() => $user->validateLicenseKey('LK-abc', 'org_123'))
         ->toThrow(InvalidCustomer::class);
 });
 
@@ -114,7 +114,7 @@ it('throws when no organization_id provided and config is empty', function () {
 
     $fake = LaravelPolar::fake();
 
-    expect(fn () => $user->validateLicenseKey('LK-abc'))
+    expect(fn() => $user->validateLicenseKey('LK-abc'))
         ->toThrow(\InvalidArgumentException::class, 'Organization ID must be provided or set via the polar.organization_id config.');
 });
 
