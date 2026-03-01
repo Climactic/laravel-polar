@@ -11,11 +11,15 @@ use Climactic\LaravelPolar\Events\BenefitGrantRevoked;
 use Climactic\LaravelPolar\Events\BenefitGrantUpdated;
 use Climactic\LaravelPolar\Events\BenefitUpdated;
 use Climactic\LaravelPolar\Events\CheckoutCreated;
+use Climactic\LaravelPolar\Events\CheckoutExpired;
 use Climactic\LaravelPolar\Events\CheckoutUpdated;
 use Climactic\LaravelPolar\Events\CustomerCreated;
 use Climactic\LaravelPolar\Events\CustomerDeleted;
 use Climactic\LaravelPolar\Events\CustomerStateChanged;
 use Climactic\LaravelPolar\Events\CustomerUpdated;
+use Climactic\LaravelPolar\Events\MemberCreated;
+use Climactic\LaravelPolar\Events\MemberDeleted;
+use Climactic\LaravelPolar\Events\MemberUpdated;
 use Climactic\LaravelPolar\Events\OrderCreated;
 use Climactic\LaravelPolar\Events\OrderUpdated;
 use Climactic\LaravelPolar\Events\ProductCreated;
@@ -530,6 +534,87 @@ it('handles checkout.updated webhook', function () {
     $job->handle();
 
     Event::assertDispatched(CheckoutUpdated::class);
+    Event::assertDispatched(WebhookReceived::class);
+    Event::assertDispatched(WebhookHandled::class);
+});
+
+it('handles checkout.expired webhook', function () {
+    $payload = [
+        'type' => 'checkout.expired',
+        'data' => [
+            'id' => 'checkout_123',
+            'url' => 'https://polar.sh/checkout/checkout_123',
+            'product_id' => 'product_123',
+            'status' => 'expired',
+            'created_at' => now()->toIso8601String(),
+        ],
+        'timestamp' => now()->toIso8601String(),
+    ];
+
+    $job = createWebhookCall($payload);
+    $job->handle();
+
+    Event::assertDispatched(CheckoutExpired::class);
+    Event::assertDispatched(WebhookReceived::class);
+    Event::assertDispatched(WebhookHandled::class);
+});
+
+it('handles member.created webhook', function () {
+    $payload = [
+        'type' => 'member.created',
+        'data' => [
+            'id' => 'member_123',
+            'customer_id' => 'customer_123',
+            'email' => 'member@example.com',
+            'created_at' => now()->toIso8601String(),
+        ],
+        'timestamp' => now()->toIso8601String(),
+    ];
+
+    $job = createWebhookCall($payload);
+    $job->handle();
+
+    Event::assertDispatched(MemberCreated::class);
+    Event::assertDispatched(WebhookReceived::class);
+    Event::assertDispatched(WebhookHandled::class);
+});
+
+it('handles member.updated webhook', function () {
+    $payload = [
+        'type' => 'member.updated',
+        'data' => [
+            'id' => 'member_123',
+            'customer_id' => 'customer_123',
+            'email' => 'updated-member@example.com',
+            'created_at' => now()->toIso8601String(),
+        ],
+        'timestamp' => now()->toIso8601String(),
+    ];
+
+    $job = createWebhookCall($payload);
+    $job->handle();
+
+    Event::assertDispatched(MemberUpdated::class);
+    Event::assertDispatched(WebhookReceived::class);
+    Event::assertDispatched(WebhookHandled::class);
+});
+
+it('handles member.deleted webhook', function () {
+    $payload = [
+        'type' => 'member.deleted',
+        'data' => [
+            'id' => 'member_123',
+            'customer_id' => 'customer_123',
+            'email' => 'member@example.com',
+            'created_at' => now()->toIso8601String(),
+        ],
+        'timestamp' => now()->toIso8601String(),
+    ];
+
+    $job = createWebhookCall($payload);
+    $job->handle();
+
+    Event::assertDispatched(MemberDeleted::class);
     Event::assertDispatched(WebhookReceived::class);
     Event::assertDispatched(WebhookHandled::class);
 });

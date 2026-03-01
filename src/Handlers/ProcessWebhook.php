@@ -19,6 +19,9 @@ use Climactic\LaravelPolar\Events\CustomerSeatClaimed;
 use Climactic\LaravelPolar\Events\CustomerSeatRevoked;
 use Climactic\LaravelPolar\Events\CustomerStateChanged;
 use Climactic\LaravelPolar\Events\CustomerUpdated;
+use Climactic\LaravelPolar\Events\MemberCreated;
+use Climactic\LaravelPolar\Events\MemberDeleted;
+use Climactic\LaravelPolar\Events\MemberUpdated;
 use Climactic\LaravelPolar\Events\OrderCreated;
 use Climactic\LaravelPolar\Events\OrderPaid;
 use Climactic\LaravelPolar\Events\OrderRefunded;
@@ -134,6 +137,9 @@ class ProcessWebhook extends ProcessWebhookJob
             'product.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, ProductUpdated::class, Components\Product::class),
             'benefit.created' => $this->handleBenefitEvent($data, $timestamp, $type, BenefitCreated::class),
             'benefit.updated' => $this->handleBenefitEvent($data, $timestamp, $type, BenefitUpdated::class),
+            'member.created' => $this->dispatchSimpleEvent($data, $timestamp, $type, MemberCreated::class, Components\Member::class),
+            'member.updated' => $this->dispatchSimpleEvent($data, $timestamp, $type, MemberUpdated::class, Components\Member::class),
+            'member.deleted' => $this->dispatchSimpleEvent($data, $timestamp, $type, MemberDeleted::class, Components\Member::class),
             default => "Unknown event type: $type",
         };
 
@@ -384,6 +390,9 @@ class ProcessWebhook extends ProcessWebhookJob
             'organization.updated' => Components\WebhookOrganizationUpdatedPayload::class,
             'product.created' => Components\WebhookProductCreatedPayload::class,
             'product.updated' => Components\WebhookProductUpdatedPayload::class,
+            'member.created' => Components\WebhookMemberCreatedPayload::class,
+            'member.updated' => Components\WebhookMemberUpdatedPayload::class,
+            'member.deleted' => Components\WebhookMemberDeletedPayload::class,
             default => throw new \InvalidArgumentException("Unknown simple event type: {$type}"),
         };
     }

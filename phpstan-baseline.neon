@@ -55,9 +55,9 @@ parameters:
 			path: src/Customer.php
 
 		-
-			message: '#^Access to property \$customer on an unknown class Climactic\\LaravelPolar\\Billable\.$#'
+			message: '#^Call to method customer\(\) on an unknown class Climactic\\LaravelPolar\\Billable\.$#'
 			identifier: class.notFound
-			count: 2
+			count: 1
 			path: src/Handlers/ProcessWebhook.php
 
 		-

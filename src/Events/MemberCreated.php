@@ -1,0 +1,18 @@
+<?php
+
+namespace Climactic\LaravelPolar\Events;
+
+use Polar\Models\Components\WebhookMemberCreatedPayload;
+
+class MemberCreated extends WebhookEvent
+{
+    /**
+     * Create a new event instance.
+     */
+    public function __construct(
+        /**
+         * The webhook payload.
+         */
+        public WebhookMemberCreatedPayload $payload,
+    ) {}
+}

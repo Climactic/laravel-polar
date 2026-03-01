@@ -99,4 +99,14 @@ class OrderFactory extends Factory
             'status' => OrderStatus::PartiallyRefunded,
         ]);
     }
+
+    /**
+     * Mark the order as void.
+     */
+    public function void(): self
+    {
+        return $this->state([
+            'status' => OrderStatus::Void,
+        ]);
+    }
 }
