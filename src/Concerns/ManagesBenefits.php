@@ -6,10 +6,16 @@ use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 use Polar\Models\Operations;
 
-trait ManagesBenefits // @phpstan-ignore-line trait.unused - ManagesBenefits is used in Billable trait
+/**
+ * @deprecated Use LaravelPolar::listBenefits(), LaravelPolar::getBenefit(), and LaravelPolar::listBenefitGrants() directly instead.
+ *             These methods do not use billable context and will be removed in a future version.
+ */
+trait ManagesBenefits
 {
     /**
      * List all benefits for an organization.
+     *
+     * @deprecated Use LaravelPolar::listBenefits() directly instead.
      *
      * @throws \Polar\Models\Errors\APIException
      * @throws \Exception
@@ -26,6 +32,8 @@ trait ManagesBenefits // @phpstan-ignore-line trait.unused - ManagesBenefits is 
     /**
      * Get a specific benefit by ID.
      *
+     * @deprecated Use LaravelPolar::getBenefit() directly instead.
+     *
      * @throws \Polar\Models\Errors\APIException
      * @throws \Exception
      */
@@ -36,6 +44,8 @@ trait ManagesBenefits // @phpstan-ignore-line trait.unused - ManagesBenefits is 
 
     /**
      * List all grants for a specific benefit.
+     *
+     * @deprecated Use LaravelPolar::listBenefitGrants() directly instead.
      *
      * @throws \Polar\Models\Errors\APIException
      * @throws \Exception

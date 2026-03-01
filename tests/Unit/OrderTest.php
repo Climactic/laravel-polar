@@ -43,6 +43,14 @@ it('can determine if the order is partially refunded', function () {
     expect($order->refunded())->toBeFalse();
 });
 
+it('can determine if the order is void', function () {
+    $order = new Order(['status' => OrderStatus::Void]);
+
+    expect($order->void())->toBeTrue();
+    expect($order->paid())->toBeFalse();
+    expect($order->refunded())->toBeFalse();
+});
+
 it('can determine if the order is for a specific product', function () {
     $order = new Order(['product_id' => '45067']);
 
@@ -78,6 +86,16 @@ it('can filter orders by partially refunded scope', function () {
 
     expect($partiallyRefundedOrders)->toHaveCount(2);
     $partiallyRefundedOrders->each(fn($order) => expect($order->status)->toBe(OrderStatus::PartiallyRefunded));
+});
+
+it('can filter orders by void scope', function () {
+    Order::factory()->paid()->count(2)->create();
+    Order::factory()->void()->count(3)->create();
+
+    $voidOrders = Order::query()->void()->get();
+
+    expect($voidOrders)->toHaveCount(3);
+    $voidOrders->each(fn($order) => expect($order->status)->toBe(OrderStatus::Void));
 });
 
 it('can sync order data', function () {

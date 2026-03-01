@@ -57,25 +57,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Redirect URL
+    | Middleware Redirect URL
     |--------------------------------------------------------------------------
     |
-    | This is the default redirect URL that will be used when a customer
-    | is redirected back to your application after completing a purchase
-    | from a checkout session in your Polar account.
+    | When a user fails the polar.subscribed middleware check and the request
+    | is not expecting JSON, they will be redirected to this URL. If null,
+    | a 403 response is returned instead.
     |
     */
-    'redirect_url' => null,
+    'middleware_redirect_url' => null,
 
     /*
     |--------------------------------------------------------------------------
-    | Currency Locale
+    | Polar Organization ID
     |--------------------------------------------------------------------------
     |
-    | This is the default locale in which your money values are formatted in
-    | for display. To utilize other locales besides the default "en" locale
-    | verify you have to have the "intl" PHP extension installed on the system.
+    | Your Polar organization ID. This is used as the default for billable
+    | methods like validateLicenseKey(), activateLicenseKey(), etc. so you
+    | don't have to pass it every time. You can find your organization ID
+    | in the Polar dashboard under Settings.
     |
     */
-    'currency_locale' => env('POLAR_CURRENCY_LOCALE', 'en'),
+    'organization_id' => env('POLAR_ORGANIZATION_ID'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Webhook Handlers
+    |--------------------------------------------------------------------------
+    |
+    | Register custom webhook handlers for specific event types. Each handler
+    | must implement the Climactic\LaravelPolar\Contracts\WebhookHandler
+    | interface. Custom handlers override the built-in handling for that event.
+    |
+    */
+    'webhook_handlers' => [
+        // 'subscription.created' => App\Webhooks\CustomHandler::class,
+    ],
 ];

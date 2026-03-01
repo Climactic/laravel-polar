@@ -4,13 +4,13 @@ namespace Climactic\LaravelPolar;
 
 use Climactic\LaravelPolar\Database\Factories\SubscriptionFactory;
 use Climactic\LaravelPolar\Exceptions\PolarApiError;
-use Polar\Models\Components\SubscriptionProrationBehavior;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Polar\Models\Components;
+use Polar\Models\Components\SubscriptionProrationBehavior;
 use Polar\Models\Components\SubscriptionStatus;
 
 /**
@@ -30,7 +30,7 @@ use Polar\Models\Components\SubscriptionStatus;
  *
  * @mixin \Eloquent
  */
-class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Billable is used in the user final code
+class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
     use HasFactory;
@@ -261,6 +261,16 @@ class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Bil
     }
 
     /**
+     * Revoke the subscription immediately.
+     */
+    public function revoke(): self
+    {
+        $request = new Components\SubscriptionRevoke();
+
+        return $this->updateAndSync($request);
+    }
+
+    /**
      * Update the subscription and sync the changes.
      *
      * @param Components\SubscriptionUpdateProduct|Components\SubscriptionCancel|Components\SubscriptionUpdateDiscount|Components\SubscriptionUpdateTrial|Components\SubscriptionUpdateSeats|Components\SubscriptionRevoke $request
@@ -286,6 +296,7 @@ class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Bil
             'status' => $subscription->status,
             'product_id' => $subscription->productId,
             'current_period_end' => $subscription->currentPeriodEnd ? Carbon::make($subscription->currentPeriodEnd) : null,
+            'trial_ends_at' => $subscription->trialEnd ? Carbon::make($subscription->trialEnd) : null,
             'ends_at' => $subscription->endedAt ? Carbon::make($subscription->endedAt) : null,
         ]);
 
@@ -303,12 +314,12 @@ class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Bil
             'status' => \is_string($attributes['status']) ? SubscriptionStatus::from($attributes['status']) : $attributes['status'],
             'product_id' => $attributes['product_id'],
             'current_period_end' => isset($attributes['current_period_end']) ? Carbon::make($attributes['current_period_end']) : null,
+            'trial_ends_at' => isset($attributes['trial_end']) ? Carbon::make($attributes['trial_end']) : null,
             'ends_at' => isset($attributes['ends_at']) ? Carbon::make($attributes['ends_at']) : null,
         ]);
 
         return $this;
     }
-
 
     /**
      * The attributes that should be cast.
@@ -318,6 +329,7 @@ class Subscription extends Model // @phpstan-ignore-line propertyTag.trait - Bil
         return [
             'status' => SubscriptionStatus::class,
             'current_period_end' => 'datetime',
+            'trial_ends_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
     }

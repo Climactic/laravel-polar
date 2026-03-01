@@ -126,6 +126,14 @@ return [
     |
     */
     'currency_locale' => env('POLAR_CURRENCY_LOCALE', 'en'),
+
+    'organization_id' => env('POLAR_ORGANIZATION_ID'),
+
+    'middleware_redirect_url' => null,
+
+    'webhook_handlers' => [
+        // 'subscription.created' => App\Webhooks\CustomHandler::class,
+    ],
 ];
 ```
 
@@ -153,14 +161,21 @@ Configure the webhook for the following events that this package supports:
 
 - `order.created`
 - `order.updated`
+- `order.paid`
+- `order.refunded`
 - `subscription.created`
 - `subscription.updated`
 - `subscription.active`
 - `subscription.canceled`
+- `subscription.uncanceled`
 - `subscription.revoked`
+- `subscription.past_due`
 - `benefit_grant.created`
 - `benefit_grant.updated`
 - `benefit_grant.revoked`
+- `benefit_grant.cycled`
+- `refund.created`
+- `refund.updated`
 - `checkout.created`
 - `checkout.updated`
 - `checkout.expired`
@@ -168,6 +183,10 @@ Configure the webhook for the following events that this package supports:
 - `customer.updated`
 - `customer.deleted`
 - `customer.state_changed`
+- `customer_seat.assigned`
+- `customer_seat.claimed`
+- `customer_seat.revoked`
+- `organization.updated`
 - `product.created`
 - `product.updated`
 - `benefit.created`
@@ -205,6 +224,102 @@ Polar includes a JavaScript script that you can use to initialize the [Polar Emb
     @polarEmbedScript
 </head>
 ```
+
+### Blade Directives
+
+The package provides Blade directives for conditionally rendering content based on subscription status.
+
+#### `@subscribed`
+
+Check if the authenticated user (or an explicit billable) has a valid subscription:
+
+```blade
+@subscribed
+    You have an active subscription!
+@else
+    Please subscribe to access this content.
+@endsubscribed
+```
+
+You can pass a subscription type and/or product ID:
+
+```blade
+@subscribed('pro')
+    Welcome, Pro member!
+@endsubscribed
+
+@subscribed('default', 'product_id_123')
+    You're on the right plan.
+@endsubscribed
+```
+
+You can also pass an explicit billable model as the first argument:
+
+```blade
+@subscribed($team)
+    Team is subscribed.
+@endsubscribed
+
+@subscribed($team, 'pro')
+    Team has a Pro plan.
+@endsubscribed
+```
+
+#### `@onTrial`
+
+Check if the authenticated user's subscription is currently trialing:
+
+```blade
+@onTrial
+    You're on a free trial!
+@else
+    Your trial has ended.
+@endonTrial
+```
+
+Accepts a subscription type or an explicit billable, just like `@subscribed`:
+
+```blade
+@onTrial('pro')
+    Your Pro trial is active.
+@endonTrial
+
+@onTrial($user)
+    This user is trialing.
+@endonTrial
+```
+
+### Route Middleware
+
+The `polar.subscribed` middleware protects routes so only subscribed users can access them:
+
+```php
+Route::middleware('polar.subscribed')->group(function () {
+    Route::get('/dashboard', DashboardController::class);
+});
+```
+
+The middleware accepts two optional parameters — **subscription type** (the label you assign when creating [multiple subscriptions](#multiple-subscriptions), defaults to `'default'`) and **product ID** (a specific Polar product the subscription must be for):
+
+```php
+// Require a subscription of type "pro"
+Route::middleware('polar.subscribed:pro')->group(function () {
+    // ...
+});
+
+// Require a "default" subscription on a specific Polar product
+Route::middleware('polar.subscribed:default,product_id_123')->group(function () {
+    // ...
+});
+```
+
+For API requests (when `Accept: application/json` is present), a 403 JSON response is returned. For web requests, you can configure a redirect URL in `config/polar.php`:
+
+```php
+'middleware_redirect_url' => '/billing',
+```
+
+If `middleware_redirect_url` is `null` (the default), a 403 response is returned for web requests as well.
 
 ### Webhooks
 
@@ -460,6 +575,78 @@ if ($user->hasPurchasedProduct('product_id_123')) {
 }
 ```
 
+#### Invoices
+
+You can retrieve and generate invoices for orders:
+
+```php
+// Get the invoice data for an order
+$invoice = $order->invoice();
+
+// Trigger invoice generation (async)
+$order->generateInvoice();
+```
+
+Or use the facade directly:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+
+$invoice = LaravelPolar::getOrderInvoice('order-id-123');
+LaravelPolar::generateOrderInvoice('order-id-123');
+```
+
+#### Refunding Orders
+
+You can refund an order (requires the amount in cents):
+
+```php
+use Polar\Models\Components\RefundReason;
+
+// Refund a specific amount
+$refund = $order->issueRefund(1000);
+
+// Refund with a reason
+$refund = $order->issueRefund(1000, RefundReason::CustomerRequest);
+```
+
+Or use the facade for more control:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Components\RefundCreate;
+use Polar\Models\Components\RefundReason;
+
+$refund = LaravelPolar::createRefund(new RefundCreate(
+    orderId: 'order-id-123',
+    reason: RefundReason::CustomerRequest,
+    amount: 1000,
+));
+
+// List all refunds
+$refunds = LaravelPolar::listRefunds();
+```
+
+#### Listing Orders via API
+
+You can list orders directly from the Polar API:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Operations\OrdersListRequest;
+
+// List all orders
+$orders = LaravelPolar::listOrders();
+
+// List with filters
+$orders = LaravelPolar::listOrders(new OrdersListRequest(
+    productId: 'product_id_123',
+));
+
+// Get a specific order from the API
+$order = LaravelPolar::getOrder('order-id-123');
+```
+
 ### Subscriptions
 
 #### Creating Subscriptions
@@ -653,10 +840,60 @@ $user->subscription()->resume();
 
 When a cancelled subscription approaches the end of its grace period, it becomes expired and cannot be resumed.
 
+#### Revoking Subscriptions
+
+To immediately revoke a subscription (cancel without a grace period), use the `revoke` method:
+
+```php
+$user->subscription()->revoke();
+```
+
+This differs from `cancel()` which cancels at the end of the billing period. `revoke()` terminates the subscription immediately.
+
+#### Subscription API Methods
+
+You can interact with subscriptions directly via the Polar API:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Operations\SubscriptionsListRequest;
+
+// List all subscriptions
+$subscriptions = LaravelPolar::listSubscriptions();
+
+// Get a specific subscription
+$subscription = LaravelPolar::getSubscription('sub-id-123');
+
+// Revoke a subscription via the API
+$subscription = LaravelPolar::revokeSubscription('sub-id-123');
+```
+
 #### Subscription Trials
 
-> [!NOTE]
-> Coming soon.
+The package supports subscription trials through the Polar SDK's `Trialing` status. You can check trial state on subscriptions:
+
+```php
+// Check if a subscription is on trial
+$subscription->onTrial();
+
+// Check if a subscription's trial has expired
+$subscription->hasExpiredTrial();
+
+// Filter subscriptions by trial status
+Subscription::query()->onTrial()->get();
+```
+
+You can also use "generic" trials on the customer model, independent of any subscription:
+
+```php
+// Check if the customer is on a generic trial
+$customer->onGenericTrial();
+
+// Check if the customer's generic trial has expired
+$customer->hasExpiredGenericTrial();
+```
+
+Generic trials use the `trial_ends_at` column on the `polar_customers` table.
 
 ### Benefits
 
@@ -726,6 +963,177 @@ Delete a benefit using the `LaravelPolar` facade:
 
 ```php
 LaravelPolar::deleteBenefit('benefit-id-123');
+```
+
+### Customers API
+
+Manage Polar customers directly via the API:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Components\CustomerCreate;
+use Polar\Models\Components\CustomerUpdate;
+use Polar\Models\Operations\CustomersListRequest;
+
+// Create a customer
+$customer = LaravelPolar::createCustomer(new CustomerCreate(
+    email: 'user@example.com',
+));
+
+// Get a customer
+$customer = LaravelPolar::getCustomer('customer-id-123');
+
+// Get a customer by external ID
+$customer = LaravelPolar::getCustomerByExternalId('your-external-id');
+
+// Update a customer
+$customer = LaravelPolar::updateCustomer('customer-id-123', new CustomerUpdate(
+    name: 'Updated Name',
+));
+
+// List all customers
+$customers = LaravelPolar::listCustomers();
+
+// Delete a customer
+LaravelPolar::deleteCustomer('customer-id-123');
+
+// Get customer state (active subscriptions, orders, etc.)
+$state = LaravelPolar::getCustomerState('customer-id-123');
+```
+
+### Products
+
+Full CRUD operations for products via the facade:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Components;
+
+// Create a product
+$product = LaravelPolar::createProduct(new Components\ProductCreateRecurring(
+    name: 'Pro Plan',
+    prices: [/* ... */],
+));
+
+// Get a product
+$product = LaravelPolar::getProduct('product-id-123');
+
+// Update a product
+$product = LaravelPolar::updateProduct('product-id-123', new Components\ProductUpdate(
+    name: 'Updated Pro Plan',
+));
+
+// Update product benefits
+$product = LaravelPolar::updateProductBenefits('product-id-123', new Components\ProductBenefitsUpdate(
+    benefits: ['benefit-id-1', 'benefit-id-2'],
+));
+
+// List products (already existed)
+$products = LaravelPolar::listProducts();
+```
+
+### Discounts
+
+Create and manage discount codes for your products:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Components;
+
+// Create a percentage discount
+$discount = LaravelPolar::createDiscount(
+    new Components\DiscountPercentageOnceForeverDurationCreate(
+        name: '20% Off',
+        basisPoints: 2000, // 20%
+        organizationId: 'your-org-id',
+    )
+);
+
+// List discounts
+$discounts = LaravelPolar::listDiscounts();
+
+// Get a discount
+$discount = LaravelPolar::getDiscount('discount-id-123');
+
+// Update a discount
+$discount = LaravelPolar::updateDiscount('discount-id-123', new Components\DiscountUpdate(
+    name: 'Updated Discount',
+));
+
+// Delete a discount
+LaravelPolar::deleteDiscount('discount-id-123');
+```
+
+Apply a discount to a checkout using the existing `withDiscountId` method:
+
+```php
+$user->checkout(['product_id_123'])
+    ->withDiscountId('discount-id-123');
+```
+
+### License Keys
+
+Manage software license keys:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Components;
+
+// List all license keys
+$keys = LaravelPolar::listLicenseKeys();
+
+// Get a specific license key
+$key = LaravelPolar::getLicenseKey('key-id-123');
+
+// Validate a license key
+$validated = LaravelPolar::validateLicenseKey(new Components\LicenseKeyValidate(
+    key: 'LICENSE-KEY-VALUE',
+    organizationId: 'your-org-id',
+));
+
+// Activate a license key
+$activation = LaravelPolar::activateLicenseKey(new Components\LicenseKeyActivate(
+    key: 'LICENSE-KEY-VALUE',
+    organizationId: 'your-org-id',
+    label: 'My Device',
+));
+
+// Deactivate a license key
+LaravelPolar::deactivateLicenseKey(new Components\LicenseKeyDeactivate(
+    key: 'LICENSE-KEY-VALUE',
+    organizationId: 'your-org-id',
+    activationId: 'activation-id',
+));
+```
+
+#### License Keys on Billable
+
+The `Billable` trait includes license key management methods so you can validate, activate, and deactivate keys directly from your user model.
+
+The `organization_id` is resolved from `config('polar.organization_id')` by default, so you only need to set it once in your `.env`:
+
+```bash
+POLAR_ORGANIZATION_ID="your-org-id"
+```
+
+You can still pass an explicit organization ID to any method if needed:
+
+```php
+// List license keys (optionally filter by benefit ID)
+$keys = $user->licenseKeys();
+$keys = $user->licenseKeys(benefitId: 'benefit-id-123');
+
+// Validate a license key
+$validated = $user->validateLicenseKey('LICENSE-KEY-VALUE');
+
+// Activate a license key on a device
+$activation = $user->activateLicenseKey('LICENSE-KEY-VALUE', 'My Laptop');
+
+// Deactivate a license key
+$user->deactivateLicenseKey('LICENSE-KEY-VALUE', 'activation-id');
+
+// Override the config org ID for a specific call
+$validated = $user->validateLicenseKey('LICENSE-KEY-VALUE', organizationId: 'other-org-id');
 ```
 
 ### Usage-Based Billing
@@ -799,18 +1207,27 @@ The package dispatches the following webhook events:
 **Order Events:**
 - `Climactic\LaravelPolar\Events\OrderCreated`
 - `Climactic\LaravelPolar\Events\OrderUpdated`
+- `Climactic\LaravelPolar\Events\OrderPaid`
+- `Climactic\LaravelPolar\Events\OrderRefunded`
 
 **Subscription Events:**
 - `Climactic\LaravelPolar\Events\SubscriptionCreated`
 - `Climactic\LaravelPolar\Events\SubscriptionUpdated`
 - `Climactic\LaravelPolar\Events\SubscriptionActive`
 - `Climactic\LaravelPolar\Events\SubscriptionCanceled`
+- `Climactic\LaravelPolar\Events\SubscriptionUncanceled`
 - `Climactic\LaravelPolar\Events\SubscriptionRevoked`
+- `Climactic\LaravelPolar\Events\SubscriptionPastDue`
 
 **Benefit Grant Events:**
 - `Climactic\LaravelPolar\Events\BenefitGrantCreated`
 - `Climactic\LaravelPolar\Events\BenefitGrantUpdated`
 - `Climactic\LaravelPolar\Events\BenefitGrantRevoked`
+- `Climactic\LaravelPolar\Events\BenefitGrantCycled`
+
+**Refund Events:**
+- `Climactic\LaravelPolar\Events\RefundCreated`
+- `Climactic\LaravelPolar\Events\RefundUpdated`
 
 **Checkout Events:**
 - `Climactic\LaravelPolar\Events\CheckoutCreated`
@@ -822,6 +1239,14 @@ The package dispatches the following webhook events:
 - `Climactic\LaravelPolar\Events\CustomerUpdated`
 - `Climactic\LaravelPolar\Events\CustomerDeleted`
 - `Climactic\LaravelPolar\Events\CustomerStateChanged`
+
+**Customer Seat Events:**
+- `Climactic\LaravelPolar\Events\CustomerSeatAssigned`
+- `Climactic\LaravelPolar\Events\CustomerSeatClaimed`
+- `Climactic\LaravelPolar\Events\CustomerSeatRevoked`
+
+**Organization Events:**
+- `Climactic\LaravelPolar\Events\OrganizationUpdated`
 
 **Product Events:**
 - `Climactic\LaravelPolar\Events\ProductCreated`
@@ -1028,12 +1453,86 @@ class EventServiceProvider extends ServiceProvider
 
 Laravel v11 and v12 will automatically discover listeners and subscribers if they follow Laravel's naming conventions.
 
-## Roadmap
+#### Custom Webhook Handlers
 
-- [ ] Add support for trials
-    Polar itself doesn't support trials, but we can manage them by ourselves.
+For full control over how a specific webhook event is processed (including database updates), you can register custom handlers in `config/polar.php`. Custom handlers run *instead of* the built-in processing for that event type.
+
+```php
+// config/polar.php
+'webhook_handlers' => [
+    'subscription.created' => App\Webhooks\CustomSubscriptionHandler::class,
+],
+```
+
+Your handler must implement `Climactic\LaravelPolar\Contracts\WebhookHandler`:
+
+```php
+<?php
+
+namespace App\Webhooks;
+
+use Climactic\LaravelPolar\Contracts\WebhookHandler;
+
+class CustomSubscriptionHandler implements WebhookHandler
+{
+    public function handle(array $data, \DateTime $timestamp, string $type): ?string
+    {
+        // Your custom logic here...
+        // $data contains the webhook payload
+
+        // Return null to mark as handled, or a string reason to mark as skipped
+        return null;
+    }
+}
+```
+
+Unregistered event types continue to use the built-in handler.
 
 ## Testing
+
+### Test Fake
+
+Use `LaravelPolar::fake()` to prevent real API calls in your test suite. The fake records all calls and lets you assert against them:
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+
+$fake = LaravelPolar::fake();
+
+// Run code that calls LaravelPolar methods...
+LaravelPolar::listProducts();
+
+// Assert methods were called
+$fake->assertCalled('listProducts');
+$fake->assertNotCalled('createProduct');
+$fake->assertCalledTimes('listProducts', 1);
+$fake->assertNothingCalled(); // fails if any method was called
+```
+
+You can stub return values for methods that your code depends on:
+
+```php
+$fake = LaravelPolar::fake();
+$fake->stub('listProducts', $myProductList);
+
+$result = LaravelPolar::listProducts(); // returns $myProductList
+```
+
+Assert that a method was called with specific arguments using a callback:
+
+```php
+$fake->assertCalledWith('getProduct', function (string $id) {
+    return $id === 'product-id-123';
+});
+```
+
+Remember to tear down the fake after each test (or in `tearDown()`):
+
+```php
+$fake->tearDown();
+```
+
+### Running Tests
 
 ```bash
 composer test
@@ -1061,4 +1560,4 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.

@@ -6,15 +6,17 @@ use Climactic\LaravelPolar\Concerns\ManagesBenefits;
 use Climactic\LaravelPolar\Concerns\ManagesCheckouts;
 use Climactic\LaravelPolar\Concerns\ManagesCustomer;
 use Climactic\LaravelPolar\Concerns\ManagesCustomerMeters;
+use Climactic\LaravelPolar\Concerns\ManagesLicenseKeys;
 use Climactic\LaravelPolar\Concerns\ManagesOrders;
 use Climactic\LaravelPolar\Concerns\ManagesSubscription;
 
-trait Billable // @phpstan-ignore-line trait.unused - Billable is used in the user final code
+trait Billable
 {
     use ManagesBenefits;
     use ManagesCheckouts;
     use ManagesCustomer;
     use ManagesCustomerMeters;
+    use ManagesLicenseKeys;
     use ManagesOrders;
     use ManagesSubscription;
 }

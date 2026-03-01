@@ -4,15 +4,10 @@ namespace Climactic\LaravelPolar\Events;
 
 use Climactic\LaravelPolar\Order;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 use Polar\Models\Components\WebhookOrderCreatedPayload;
 
-class OrderCreated
+class OrderCreated extends WebhookEvent
 {
-    use Dispatchable;
-    use SerializesModels;
-
     /**
      * Create a new event instance.
      */

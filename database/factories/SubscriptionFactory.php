@@ -50,10 +50,10 @@ class SubscriptionFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function ($subscription) {
-            Customer::factory()->create([
+            Customer::firstOrCreate([
                 'billable_id' => $subscription->billable_id,
                 'billable_type' => $subscription->billable_type,
-            ]);
+            ], Customer::factory()->raw());
         });
     }
 

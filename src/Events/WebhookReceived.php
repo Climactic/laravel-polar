@@ -2,14 +2,8 @@
 
 namespace Climactic\LaravelPolar\Events;
 
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
-
-class WebhookReceived
+class WebhookReceived extends WebhookEvent
 {
-    use Dispatchable;
-    use SerializesModels;
-
     public function __construct(
         /**
          * The payload array.

@@ -6,7 +6,7 @@ use Climactic\LaravelPolar\Checkout;
 use Illuminate\Support\Facades\Log;
 use Polar\Models\Components;
 
-trait ManagesCheckouts // @phpstan-ignore-line trait.unused - ManagesCheckouts is used in Billable trait
+trait ManagesCheckouts
 {
     /**
      * Create a new checkout instance to sell a product.

@@ -212,7 +212,7 @@ it('throws exception when listing meters without customer', function () {
     $user = User::factory()->create();
 
     expect(fn() => $user->listCustomerMeters())
-        ->toThrow(\Exception::class, 'Customer not yet created in Polar.');
+        ->toThrow(\Climactic\LaravelPolar\Exceptions\InvalidCustomer::class);
 });
 
 it('throws exception when listing meters without polar_id', function () {
@@ -224,7 +224,7 @@ it('throws exception when listing meters without polar_id', function () {
     ]);
 
     expect(fn() => $user->listCustomerMeters())
-        ->toThrow(\Exception::class, 'Customer not yet created in Polar.');
+        ->toThrow(\Climactic\LaravelPolar\Exceptions\InvalidCustomer::class);
 });
 
 it('can ingest events via LaravelPolar facade', function () {

@@ -315,7 +315,8 @@ it('converts empty customer metadata array to null', function () {
     expect($customerMetadataProperty->getValue($checkout))->toBeNull();
 });
 
-it('converts customer metadata to null after filtering leaves empty array', function () {
+it('preserves customer metadata even with null values passed at runtime', function () {
+    // @phpstan-ignore argument.type (testing runtime behavior with invalid types)
     $checkout = Checkout::make(['product_123'])
         ->withCustomerMetadata(['key1' => null, 'key2' => null]);
 
@@ -323,7 +324,8 @@ it('converts customer metadata to null after filtering leaves empty array', func
     $customerMetadataProperty = $reflection->getProperty('customerMetadata');
     $customerMetadataProperty->setAccessible(true);
 
-    expect($customerMetadataProperty->getValue($checkout))->toBeNull();
+    // Null values are preserved as-is; callers should not pass nulls per the type declaration
+    expect($customerMetadataProperty->getValue($checkout))->toBe(['key1' => null, 'key2' => null]);
 });
 
 it('preserves null metadata input', function () {

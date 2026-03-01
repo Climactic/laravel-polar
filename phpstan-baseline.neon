@@ -1,0 +1,121 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Billable is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Billable.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesBenefits is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesBenefits.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesCheckouts is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesCheckouts.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesCustomer is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesCustomer.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesCustomerMeters is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesCustomerMeters.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesLicenseKeys is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesLicenseKeys.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesOrders is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesOrders.php
+
+		-
+			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesSubscription is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: src/Concerns/ManagesSubscription.php
+
+		-
+			message: '#^PHPDoc tag @property for property Climactic\\LaravelPolar\\Customer\:\:\$billable contains invalid type Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: propertyTag.trait
+			count: 1
+			path: src/Customer.php
+
+		-
+			message: '#^Call to method customer\(\) on an unknown class Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Call to method orders\(\) on an unknown class Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Call to method subscriptions\(\) on an unknown class Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Method Climactic\\LaravelPolar\\Handlers\\ProcessWebhook\:\:findOrCreateCustomer\(\) has invalid return type Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: return.trait
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Method Climactic\\LaravelPolar\\Handlers\\ProcessWebhook\:\:resolveBillable\(\) has invalid return type Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: return.trait
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Parameter \#1 \$billable of event class Climactic\\LaravelPolar\\Events\\OrderCreated constructor expects Illuminate\\Database\\Eloquent\\Model in Climactic\\LaravelPolar\\Events\\OrderCreated\:\:dispatch\(\), Climactic\\LaravelPolar\\Billable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Parameter \#1 \$billable of event class Climactic\\LaravelPolar\\Events\\OrderUpdated constructor expects Illuminate\\Database\\Eloquent\\Model in Climactic\\LaravelPolar\\Events\\OrderUpdated\:\:dispatch\(\), Climactic\\LaravelPolar\\Billable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^Parameter \#1 \$billable of event class Climactic\\LaravelPolar\\Events\\SubscriptionCreated constructor expects Illuminate\\Database\\Eloquent\\Model in Climactic\\LaravelPolar\\Events\\SubscriptionCreated\:\:dispatch\(\), Climactic\\LaravelPolar\\Billable given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Handlers/ProcessWebhook.php
+
+		-
+			message: '#^PHPDoc tag @property for property Climactic\\LaravelPolar\\Order\:\:\$billable contains invalid type Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: propertyTag.trait
+			count: 1
+			path: src/Order.php
+
+		-
+			message: '#^PHPDoc tag @property for property Climactic\\LaravelPolar\\Subscription\:\:\$billable contains invalid type Climactic\\LaravelPolar\\Billable\.$#'
+			identifier: propertyTag.trait
+			count: 1
+			path: src/Subscription.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/View/Components/Button.php

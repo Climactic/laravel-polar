@@ -2,11 +2,12 @@
 
 namespace Climactic\LaravelPolar\Concerns;
 
+use Climactic\LaravelPolar\Exceptions\InvalidCustomer;
 use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 use Polar\Models\Operations;
 
-trait ManagesCustomerMeters // @phpstan-ignore-line trait.unused - ManagesCustomerMeters is used in Billable trait
+trait ManagesCustomerMeters
 {
     /**
      * Track a single usage event for this customer.
@@ -87,7 +88,7 @@ trait ManagesCustomerMeters // @phpstan-ignore-line trait.unused - ManagesCustom
     public function listCustomerMeters(?string $meterId = null): Operations\CustomerMetersListResponse
     {
         if ($this->customer === null || $this->customer->polar_id === null) {
-            throw new \Exception('Customer not yet created in Polar.');
+            throw InvalidCustomer::notYetCreated($this);
         }
 
         $request = new Operations\CustomerMetersListRequest(

@@ -7,7 +7,7 @@ use Polar\Models\Components\OrderStatus;
 use Climactic\LaravelPolar\Order;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-trait ManagesOrders // @phpstan-ignore-line trait.unused - ManagesOrders is used in Billable trait
+trait ManagesOrders
 {
     /**
      * Get all of the orders for the billable.

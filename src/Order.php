@@ -2,12 +2,17 @@
 
 namespace Climactic\LaravelPolar;
 
+use Illuminate\Support\Carbon;
 use Climactic\LaravelPolar\Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Polar\Models\Components\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Polar\Models\Components\OrderInvoice;
+use Polar\Models\Components\OrderStatus;
+use Polar\Models\Components\Refund;
+use Polar\Models\Components\RefundCreate;
+use Polar\Models\Components\RefundReason;
 
 /**
  * @property int $id
@@ -31,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  *
  * @mixin \Eloquent
  */
-class Order extends Model // @phpstan-ignore-line propertyTag.trait - Billable is used in the user final code
+class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
@@ -139,6 +144,54 @@ class Order extends Model // @phpstan-ignore-line propertyTag.trait - Billable i
     }
 
     /**
+     * Get the invoice for this order.
+     *
+     * @throws \RuntimeException if the order has no polar_id
+     */
+    public function invoice(): OrderInvoice
+    {
+        if ($this->polar_id === null) {
+            throw new \RuntimeException('Cannot retrieve invoice for an order without a polar_id.');
+        }
+
+        return LaravelPolar::getOrderInvoice($this->polar_id);
+    }
+
+    /**
+     * Generate/trigger invoice creation for this order.
+     *
+     * @throws \RuntimeException if the order has no polar_id
+     */
+    public function generateInvoice(): void
+    {
+        if ($this->polar_id === null) {
+            throw new \RuntimeException('Cannot generate invoice for an order without a polar_id.');
+        }
+
+        LaravelPolar::generateOrderInvoice($this->polar_id);
+    }
+
+    /**
+     * Refund this order (full or partial).
+     *
+     * @throws \RuntimeException if the order has no polar_id
+     */
+    public function issueRefund(int $amount, ?RefundReason $reason = null): Refund
+    {
+        if ($this->polar_id === null) {
+            throw new \RuntimeException('Cannot refund an order without a polar_id.');
+        }
+
+        $request = new RefundCreate(
+            orderId: $this->polar_id,
+            reason: $reason ?? RefundReason::Other,
+            amount: $amount,
+        );
+
+        return LaravelPolar::createRefund($request);
+    }
+
+    /**
      * Sync the order with the given attributes.
      *
      * @param  array<string, mixed>  $attributes
@@ -156,8 +209,8 @@ class Order extends Model // @phpstan-ignore-line propertyTag.trait - Billable i
             'billing_reason' => $attributes['billing_reason'],
             'customer_id' => $attributes['customer_id'],
             'product_id' => $attributes['product_id'],
-            'refunded_at' => $attributes['refunded_at'],
-            'ordered_at' => $attributes['created_at'],
+            'refunded_at' => isset($attributes['refunded_at']) ? Carbon::make($attributes['refunded_at']) : null,
+            'ordered_at' => Carbon::make($attributes['created_at']),
         ]);
 
         return $this;
