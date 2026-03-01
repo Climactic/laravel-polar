@@ -38,7 +38,7 @@ use Spatie\WebhookClient\Models\WebhookCall;
 
 class TestProcessWebhook extends ProcessWebhook
 {
-    public function __construct($webhookCall, string $jsonPayload)
+    public function __construct($webhookCall)
     {
         parent::__construct($webhookCall);
     }
@@ -52,7 +52,7 @@ function createWebhookCall(array $payload): ProcessWebhook
         'payload' => $payload,
     ]);
 
-    return new TestProcessWebhook($webhookCall, '');
+    return new TestProcessWebhook($webhookCall);
 }
 
 beforeEach(function () {

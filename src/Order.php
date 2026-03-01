@@ -145,25 +145,43 @@ class Order extends Model
 
     /**
      * Get the invoice for this order.
+     *
+     * @throws \RuntimeException if the order has no polar_id
      */
     public function invoice(): OrderInvoice
     {
+        if ($this->polar_id === null) {
+            throw new \RuntimeException('Cannot retrieve invoice for an order without a polar_id.');
+        }
+
         return LaravelPolar::getOrderInvoice($this->polar_id);
     }
 
     /**
      * Generate/trigger invoice creation for this order.
+     *
+     * @throws \RuntimeException if the order has no polar_id
      */
     public function generateInvoice(): void
     {
+        if ($this->polar_id === null) {
+            throw new \RuntimeException('Cannot generate invoice for an order without a polar_id.');
+        }
+
         LaravelPolar::generateOrderInvoice($this->polar_id);
     }
 
     /**
      * Refund this order (full or partial).
+     *
+     * @throws \RuntimeException if the order has no polar_id
      */
     public function refund(int $amount, ?RefundReason $reason = null): Refund
     {
+        if ($this->polar_id === null) {
+            throw new \RuntimeException('Cannot refund an order without a polar_id.');
+        }
+
         $request = new RefundCreate(
             orderId: $this->polar_id,
             reason: $reason ?? RefundReason::Other,
@@ -191,8 +209,8 @@ class Order extends Model
             'billing_reason' => $attributes['billing_reason'],
             'customer_id' => $attributes['customer_id'],
             'product_id' => $attributes['product_id'],
-            'refunded_at' => isset($attributes['refunded_at']) ? Carbon::make($attributes['refunded_at']) : null,
-            'ordered_at' => Carbon::make($attributes['created_at']),
+            'refunded_at' => isset($attributes['refunded_at']) ? Carbon::parse($attributes['refunded_at']) : null,
+            'ordered_at' => Carbon::parse($attributes['created_at']),
         ]);
 
         return $this;

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,6 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Remove duplicate rows before adding the unique constraint,
+        // keeping only the row with the lowest id for each billable pair.
+        DB::table('polar_customers')
+            ->whereNotIn('id', function ($query) {
+                $query->select(DB::raw('MIN(id)'))
+                    ->from('polar_customers')
+                    ->groupBy('billable_type', 'billable_id');
+            })
+            ->delete();
+
         Schema::table('polar_customers', function (Blueprint $table) {
             $table->unique(['billable_type', 'billable_id']);
         });
@@ -22,7 +33,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('polar_customers', function (Blueprint $table) {
-            $table->dropUnique(['billable_type', 'billable_id']);
+            if (Schema::hasIndex('polar_customers', 'polar_customers_billable_type_billable_id_unique')) {
+                $table->dropUnique(['billable_type', 'billable_id']);
+            }
         });
     }
 };

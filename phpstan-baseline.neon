@@ -7,12 +7,6 @@ parameters:
 			path: src/Billable.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between bool\|int\|string and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: src/Checkout.php
-
-		-
 			message: '#^Trait Climactic\\LaravelPolar\\Concerns\\ManagesBenefits is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1

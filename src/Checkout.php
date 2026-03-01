@@ -110,10 +110,8 @@ class Checkout implements Responsable
      */
     public function withCustomerMetadata(?array $customerMetadata): self
     {
-        // Process input: trim strings and filter out nulls (defensive programming)
         $processed = collect($customerMetadata)
             ->map(fn($value) => is_string($value) ? trim($value) : $value)
-            ->filter(fn($value) => $value !== null)
             ->toArray();
 
         // Convert empty array to null for SDK serialization

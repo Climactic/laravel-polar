@@ -12,7 +12,7 @@ use Spatie\WebhookClient\Models\WebhookCall;
 
 class TestRegistryProcessWebhook extends ProcessWebhook
 {
-    public function __construct($webhookCall, string $jsonPayload = '')
+    public function __construct($webhookCall)
     {
         parent::__construct($webhookCall);
     }
@@ -26,7 +26,7 @@ function createRegistryWebhookCall(array $payload): TestRegistryProcessWebhook
         'payload' => $payload,
     ]);
 
-    return new TestRegistryProcessWebhook($webhookCall, '');
+    return new TestRegistryProcessWebhook($webhookCall);
 }
 
 it('uses custom handler when registered for an event type', function () {

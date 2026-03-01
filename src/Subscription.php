@@ -296,6 +296,7 @@ class Subscription extends Model
             'status' => $subscription->status,
             'product_id' => $subscription->productId,
             'current_period_end' => $subscription->currentPeriodEnd ? Carbon::make($subscription->currentPeriodEnd) : null,
+            'trial_ends_at' => $subscription->trialEnd ? Carbon::make($subscription->trialEnd) : null,
             'ends_at' => $subscription->endedAt ? Carbon::make($subscription->endedAt) : null,
         ]);
 

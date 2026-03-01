@@ -361,7 +361,8 @@ class ProcessWebhook extends ProcessWebhookJob
             'refund.updated' => Components\WebhookRefundUpdatedPayload::class,
             'organization.updated' => Components\WebhookOrganizationUpdatedPayload::class,
             'product.created' => Components\WebhookProductCreatedPayload::class,
-            default => Components\WebhookProductUpdatedPayload::class,
+            'product.updated' => Components\WebhookProductUpdatedPayload::class,
+            default => throw new \InvalidArgumentException("Unknown simple event type: {$type}"),
         };
     }
 
