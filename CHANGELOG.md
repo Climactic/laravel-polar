@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-polar` will be documented in this file.
 
+## v2.2.1 - 2026-03-27 - 2026-03-26
+
+chore: laravel 13 support
+
+**Full Changelog**: https://github.com/Climactic/laravel-polar/compare/v2.2.0...v2.2.1
+
 ## v2.2.0 - 2026-03-02 - 2026-03-01
 
 ### What's Changed
@@ -154,6 +160,7 @@ composer require climactic/laravel-polar:^2.0
 
 
 
+
 ```
 After installation:
 
@@ -168,11 +175,13 @@ After installation:
    
    
    
+   
    ```
 2. **Run migrations** (if any new ones exist):
    
    ```bash
    php artisan migrate
+   
    
    
    
