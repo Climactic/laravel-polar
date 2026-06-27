@@ -271,6 +271,85 @@ class Subscription extends Model
     }
 
     /**
+     * Get the trial end date.
+     */
+    public function trialEndsAt(): ?\Carbon\CarbonInterface
+    {
+        return $this->trial_ends_at;
+    }
+
+    /**
+     * Update the trial end date for the subscription.
+     */
+    public function updateTrial(\DateTimeInterface $trialEnd): self
+    {
+        $request = new Components\SubscriptionUpdateTrial(
+            trialEnd: \DateTime::createFromInterface($trialEnd),
+        );
+
+        return $this->updateAndSync($request);
+    }
+
+    /**
+     * Apply a discount to this subscription on the next billing cycle.
+     */
+    public function applyDiscount(string $discountId): self
+    {
+        return $this->updateAndSync(new Components\SubscriptionUpdateDiscount(discountId: $discountId));
+    }
+
+    /**
+     * Remove any active discount from this subscription on the next billing cycle.
+     */
+    public function removeDiscount(): self
+    {
+        return $this->updateAndSync(new Components\SubscriptionUpdateDiscount(discountId: null));
+    }
+
+    /**
+     * List the seats on this subscription.
+     */
+    public function seats(): Components\SeatsList
+    {
+        return LaravelPolar::listSeats(subscriptionId: $this->polar_id);
+    }
+
+    /**
+     * Assign a seat on this subscription to a member by email, customer id, or
+     * external customer id. Passing none of the three creates a pending seat
+     * that can be claimed via an invitation link.
+     *
+     * @param  array<string, mixed>|null  $metadata
+     */
+    public function assignSeat(?string $email = null, ?string $customerId = null, ?string $externalCustomerId = null, ?array $metadata = null, ?bool $immediateClaim = false): Components\CustomerSeat
+    {
+        return LaravelPolar::assignSeat(new Components\SeatAssign(
+            subscriptionId: $this->polar_id,
+            email: $email,
+            customerId: $customerId,
+            externalCustomerId: $externalCustomerId,
+            metadata: $metadata,
+            immediateClaim: $immediateClaim,
+        ));
+    }
+
+    /**
+     * Revoke a seat from this subscription.
+     */
+    public function revokeSeat(string $seatId): Components\CustomerSeat
+    {
+        return LaravelPolar::revokeSeat($seatId);
+    }
+
+    /**
+     * Resend the invitation email for a pending seat on this subscription.
+     */
+    public function resendSeatInvitation(string $seatId): Components\CustomerSeat
+    {
+        return LaravelPolar::resendSeatInvitation($seatId);
+    }
+
+    /**
      * Update the subscription and sync the changes.
      *
      * @param Components\SubscriptionUpdateProduct|Components\SubscriptionCancel|Components\SubscriptionUpdateDiscount|Components\SubscriptionUpdateTrial|Components\SubscriptionUpdateSeats|Components\SubscriptionRevoke $request
@@ -295,7 +374,7 @@ class Subscription extends Model
         $this->update([
             'status' => $subscription->status,
             'product_id' => $subscription->productId,
-            'current_period_end' => $subscription->currentPeriodEnd ? Carbon::make($subscription->currentPeriodEnd) : null,
+            'current_period_end' => Carbon::make($subscription->currentPeriodEnd),
             'trial_ends_at' => $subscription->trialEnd ? Carbon::make($subscription->trialEnd) : null,
             'ends_at' => $subscription->endedAt ? Carbon::make($subscription->endedAt) : null,
         ]);

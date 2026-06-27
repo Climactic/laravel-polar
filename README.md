@@ -468,6 +468,9 @@ $request->user()->checkout('variant-id')
     ->withSuccessUrl(url('/success?checkout_id={CHECKOUT_ID}'));
 ```
 
+> [!NOTE]
+> When a checkout is returned from an Inertia request (the `X-Inertia` header is present), the response is automatically converted to an `Inertia::location()` external visit so the browser is redirected to Polar without tripping CORS. Regular requests continue to receive a `303` redirect.
+
 ### Custom metadata and customer metadata
 
 You can add custom metadata to the checkout session using the `withMetadata` method:
@@ -625,6 +628,24 @@ $refund = LaravelPolar::createRefund(new RefundCreate(
 
 // List all refunds
 $refunds = LaravelPolar::listRefunds();
+```
+
+You can also list the refunds for a specific order:
+
+```php
+$refunds = $order->refunds(); // Collection<Refund>
+```
+
+#### Receipts
+
+Get the receipt/invoice PDF URL for an order, or redirect the customer straight to it:
+
+```php
+// The generated invoice/receipt PDF URL (null for unsynced orders)
+$url = $order->receiptUrl();
+
+// Or return a redirect response to the receipt from a controller
+return $order->downloadInvoice();
 ```
 
 #### Listing Orders via API
@@ -849,6 +870,22 @@ $user->subscription()->revoke();
 ```
 
 This differs from `cancel()` which cancels at the end of the billing period. `revoke()` terminates the subscription immediately.
+
+#### Discounts & Trials
+
+Apply or remove a discount on a subscription (takes effect on the next billing cycle), or update the trial end date:
+
+```php
+// Apply / remove a discount
+$user->subscription()->applyDiscount('discount-id');
+$user->subscription()->removeDiscount();
+
+// Update the trial end date
+$user->subscription()->updateTrial(new DateTime('+14 days'));
+
+// Read the current trial end (Carbon|null)
+$endsAt = $user->subscription()->trialEndsAt();
+```
 
 #### Subscription API Methods
 
@@ -1135,6 +1172,123 @@ $user->deactivateLicenseKey('LICENSE-KEY-VALUE', 'activation-id');
 // Override the config org ID for a specific call
 $validated = $user->validateLicenseKey('LICENSE-KEY-VALUE', organizationId: 'other-org-id');
 ```
+
+#### Updating a License Key (admin)
+
+```php
+use Polar\Models\Components;
+
+$updated = LaravelPolar::updateLicenseKey('key-id-123', new Components\LicenseKeyUpdate(
+    // e.g. status, usage limits, expiry...
+));
+```
+
+### Seats
+
+Manage seats on a subscription (for seat-based / per-member plans):
+
+```php
+use Climactic\LaravelPolar\LaravelPolar;
+use Polar\Models\Components;
+
+// List the seats on a subscription or order
+$seats = LaravelPolar::listSeats(subscriptionId: 'sub-id');
+
+// Assign a seat by email, customer id, or external customer id
+$seat = LaravelPolar::assignSeat(new Components\SeatAssign(
+    subscriptionId: 'sub-id',
+    email: 'member@example.com',
+));
+
+// Revoke or resend an invitation
+LaravelPolar::revokeSeat('seat-id');
+LaravelPolar::resendSeatInvitation('seat-id');
+```
+
+The same operations are available directly on a `Subscription` model:
+
+```php
+$subscription->seats();
+$subscription->assignSeat(email: 'member@example.com');
+$subscription->revokeSeat('seat-id');
+$subscription->resendSeatInvitation('seat-id');
+```
+
+### Checkout Links
+
+Reusable checkout links (admin-scoped):
+
+```php
+use Polar\Models\Components;
+
+$link = LaravelPolar::createCheckoutLink(new Components\CheckoutLinkCreateProducts(
+    products: ['product-id'],
+));
+
+$link  = LaravelPolar::getCheckoutLink('checkout-link-id');
+$link  = LaravelPolar::updateCheckoutLink('checkout-link-id', new Components\CheckoutLinkUpdate());
+$links = LaravelPolar::listCheckoutLinks();
+
+LaravelPolar::deleteCheckoutLink('checkout-link-id');
+```
+
+### Custom Fields
+
+```php
+use Polar\Models\Components;
+
+$field = LaravelPolar::createCustomField(new Components\CustomFieldCreateText(
+    slug: 'referral_source',
+    name: 'Referral source',
+    properties: new Components\CustomFieldTextProperties(),
+));
+
+$field  = LaravelPolar::getCustomField('custom-field-id');
+$field  = LaravelPolar::updateCustomField('custom-field-id', new Components\CustomFieldUpdateText());
+$fields = LaravelPolar::listCustomFields();
+
+LaravelPolar::deleteCustomField('custom-field-id');
+
+// Read the custom field data submitted at checkout for an order
+$data = $order->customFieldData();
+```
+
+### Metrics, Organizations & Files
+
+```php
+use Polar\Models\Operations;
+use Polar\Models\Components;
+use Brick\DateTime\LocalDate;
+
+// Analytics metrics for a period
+$metrics = LaravelPolar::getMetrics(new Operations\MetricsGetRequest(
+    startDate: LocalDate::of(2024, 1, 1),
+    endDate: LocalDate::of(2024, 1, 31),
+    interval: Components\TimeInterval::Day,
+));
+
+// Organizations
+$org  = LaravelPolar::getOrganization('org-id');
+$orgs = LaravelPolar::listOrganizations();
+
+// Files
+$files = LaravelPolar::listFiles();
+```
+
+### Payment Methods
+
+Your billable model can list and delete its saved payment methods. A short-lived
+customer session is minted under the hood, so you never expose your admin token:
+
+```php
+// Collection of payment methods for the billable's customer
+$methods = $user->paymentMethods();
+
+// Delete one
+$user->deletePaymentMethod('payment-method-id');
+```
+
+Both methods throw `InvalidCustomer` if the billable has no associated Polar customer yet.
 
 ### Usage-Based Billing
 

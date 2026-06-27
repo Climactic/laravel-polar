@@ -86,6 +86,7 @@ it('handles order.created webhook', function () {
             'created_at' => now()->toIso8601String(),
             'customer' => [
                 'id' => 'customer_123',
+                'type' => 'individual',
                 'metadata' => [
                     'billable_id' => (string) $user->getKey(),
                     'billable_type' => $user->getMorphClass(),
@@ -135,6 +136,7 @@ it('handles order.updated webhook', function () {
             'created_at' => now()->toIso8601String(),
             'customer' => [
                 'id' => 'customer_123',
+                'type' => 'individual',
                 'metadata' => [
                     'billable_id' => (string) $user->getKey(),
                     'billable_type' => $user->getMorphClass(),
@@ -324,6 +326,7 @@ it('handles benefit_grant.created webhook', function () {
             'customer_id' => 'customer_123',
             'customer' => [
                 'id' => 'customer_123',
+                'type' => 'individual',
                 'metadata' => [
                     'billable_id' => (string) $user->getKey(),
                     'billable_type' => $user->getMorphClass(),
@@ -350,6 +353,7 @@ it('handles benefit_grant.updated webhook', function () {
             'customer_id' => 'customer_123',
             'customer' => [
                 'id' => 'customer_123',
+                'type' => 'individual',
                 'metadata' => [
                     'billable_id' => (string) $user->getKey(),
                     'billable_type' => $user->getMorphClass(),
@@ -376,6 +380,7 @@ it('handles benefit_grant.revoked webhook', function () {
             'customer_id' => 'customer_123',
             'customer' => [
                 'id' => 'customer_123',
+                'type' => 'individual',
                 'metadata' => [
                     'billable_id' => (string) $user->getKey(),
                     'billable_type' => $user->getMorphClass(),
@@ -456,6 +461,7 @@ it('dispatches WebhookSkipped when order.updated references nonexistent order', 
             'created_at' => now()->toIso8601String(),
             'customer' => [
                 'id' => 'customer_123',
+                'type' => 'individual',
                 'metadata' => [
                     'billable_id' => (string) $user->getKey(),
                     'billable_type' => $user->getMorphClass(),
