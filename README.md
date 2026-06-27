@@ -601,16 +601,20 @@ LaravelPolar::generateOrderInvoice('order-id-123');
 
 #### Refunding Orders
 
-You can refund an order (requires the amount in cents):
+You can refund an order. With no arguments it refunds the remaining unrefunded
+amount with reason `customer_request`:
 
 ```php
 use Polar\Models\Components\RefundReason;
 
-// Refund a specific amount
-$refund = $order->issueRefund(1000);
+// Refund the remaining unrefunded amount
+$refund = $order->refund();
 
-// Refund with a reason
-$refund = $order->issueRefund(1000, RefundReason::CustomerRequest);
+// Refund a specific amount (in cents)
+$refund = $order->refund(1000);
+
+// Refund with a reason, comment, and metadata
+$refund = $order->refund(1000, RefundReason::CustomerRequest, comment: 'Goodwill', metadata: ['ticket' => '123']);
 ```
 
 Or use the facade for more control:

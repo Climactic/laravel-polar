@@ -207,6 +207,44 @@ it('lists refunds for a synced order through the facade', function () {
     $fake->assertCalledWith('listRefunds', fn($req) => $req instanceof Operations\RefundsListRequest && $req->orderId === 'order_1');
 });
 
+it('refunds the remaining unrefunded amount by default', function () {
+    $order = Order::factory()->make([
+        'polar_id' => 'order_1',
+        'amount' => 5000,
+        'refunded_amount' => 1500,
+    ]);
+
+    $fake = LaravelPolar::fake();
+    $fake->stub('createRefund', Mockery::mock(Components\Refund::class));
+
+    $order->refund();
+
+    $fake->assertCalledWith('createRefund', fn($req) => $req instanceof Components\RefundCreate
+        && $req->orderId === 'order_1'
+        && $req->amount === 3500
+        && $req->reason === Components\RefundReason::CustomerRequest);
+});
+
+it('refunds an explicit amount with a reason, comment and metadata', function () {
+    $order = Order::factory()->make(['polar_id' => 'order_1', 'amount' => 5000, 'refunded_amount' => 0]);
+
+    $fake = LaravelPolar::fake();
+    $fake->stub('createRefund', Mockery::mock(Components\Refund::class));
+
+    $order->refund(1000, Components\RefundReason::ServiceDisruption, comment: 'Goodwill', metadata: ['ticket' => '123']);
+
+    $fake->assertCalledWith('createRefund', fn($req) => $req->amount === 1000
+        && $req->reason === Components\RefundReason::ServiceDisruption
+        && $req->comment === 'Goodwill'
+        && $req->metadata === ['ticket' => '123']);
+});
+
+it('throws when refunding an order without a polar_id', function () {
+    $order = Order::factory()->make(['polar_id' => null]);
+
+    expect(fn() => $order->refund())->toThrow(\RuntimeException::class);
+});
+
 it('throws when downloading an invoice without a receipt url', function () {
     $order = Order::factory()->make(['polar_id' => null]);
 

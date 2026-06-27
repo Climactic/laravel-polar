@@ -16,6 +16,10 @@ Sync upstream `danestves/laravel-polar` features (v2.3–v2.13) onto our fork.
 - License keys: `LaravelPolar::updateLicenseKey()` (admin update).
 - Subscriptions: `applyDiscount()`, `removeDiscount()`, `updateTrial()`, `trialEndsAt()`.
 - Orders: `receiptUrl()`, `downloadInvoice()`, `refunds()`.
+
+### Changed
+
+- Replaced `Order::issueRefund(int $amount, ...)` with `Order::refund(?int $amount = null, ?RefundReason $reason = null, ?string $comment = null, ?array $metadata = null)`, matching upstream: refunds the remaining unrefunded amount by default with reason `customer_request`.
 - Payment methods: `$billable->paymentMethods()` and `$billable->deletePaymentMethod()` via the new `ManagesPaymentMethods` concern.
 
 ### Fixed

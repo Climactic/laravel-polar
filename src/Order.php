@@ -172,11 +172,14 @@ class Order extends Model
     }
 
     /**
-     * Refund this order (full or partial).
+     * Issue a refund for this order. Defaults to refunding the remaining
+     * unrefunded amount with reason "customer_request".
+     *
+     * @param  array<string, scalar|null>|null  $metadata
      *
      * @throws \RuntimeException if the order has no polar_id
      */
-    public function issueRefund(int $amount, ?RefundReason $reason = null): Refund
+    public function refund(?int $amount = null, ?RefundReason $reason = null, ?string $comment = null, ?array $metadata = null): Refund
     {
         if ($this->polar_id === null) {
             throw new \RuntimeException('Cannot refund an order without a polar_id.');
@@ -184,8 +187,10 @@ class Order extends Model
 
         $request = new RefundCreate(
             orderId: $this->polar_id,
-            reason: $reason ?? RefundReason::Other,
-            amount: $amount,
+            reason: $reason ?? RefundReason::CustomerRequest,
+            amount: $amount ?? max(0, $this->amount - $this->refunded_amount),
+            metadata: $metadata,
+            comment: $comment,
         );
 
         return LaravelPolar::createRefund($request);
