@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-polar` will be documented in this file.
 
+## v2.3.0 - 2026-06-28 - 2026-06-27
+
+### What's Changed
+
+* Sync upstream danestves/laravel-polar features (v2.3–v2.13) by @adiologydev in https://github.com/Climactic/laravel-polar/pull/7
+
+**Full Changelog**: https://github.com/Climactic/laravel-polar/compare/v2.2.1...v2.3.0
+
 ## Unreleased
 
 Sync upstream `danestves/laravel-polar` features (v2.3–v2.13) onto our fork.
@@ -187,6 +195,7 @@ composer require climactic/laravel-polar:^2.0
 
 
 
+
 ```
 After installation:
 
@@ -202,11 +211,13 @@ After installation:
    
    
    
+   
    ```
 2. **Run migrations** (if any new ones exist):
    
    ```bash
    php artisan migrate
+   
    
    
    
