@@ -222,12 +222,7 @@ class Order extends Model
             return $this->cachedCustomFieldData = [];
         }
 
-        $sdkResponse = LaravelPolar::sdk()->orders->get(id: $this->polar_id);
-        $sdkOrder = $sdkResponse->order;
-
-        if ($sdkOrder === null) {
-            return $this->cachedCustomFieldData = [];
-        }
+        $sdkOrder = LaravelPolar::getOrder($this->polar_id);
 
         return $this->cachedCustomFieldData = $sdkOrder->customFieldData ?? [];
     }
@@ -253,7 +248,7 @@ class Order extends Model
             return $this->cachedReceiptUrl;
         }
 
-        if ($this->polar_id === null || $this->customer_id === '') {
+        if ($this->polar_id === null || empty($this->customer_id)) {
             return null;
         }
 

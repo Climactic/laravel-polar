@@ -311,6 +311,10 @@ class Subscription extends Model
      */
     public function seats(): Components\SeatsList
     {
+        if (empty($this->polar_id)) {
+            throw new \RuntimeException('Cannot list seats for a subscription without a polar_id.');
+        }
+
         return LaravelPolar::listSeats(subscriptionId: $this->polar_id);
     }
 
@@ -323,6 +327,10 @@ class Subscription extends Model
      */
     public function assignSeat(?string $email = null, ?string $customerId = null, ?string $externalCustomerId = null, ?array $metadata = null, ?bool $immediateClaim = false): Components\CustomerSeat
     {
+        if (empty($this->polar_id)) {
+            throw new \RuntimeException('Cannot assign a seat for a subscription without a polar_id.');
+        }
+
         return LaravelPolar::assignSeat(new Components\SeatAssign(
             subscriptionId: $this->polar_id,
             email: $email,

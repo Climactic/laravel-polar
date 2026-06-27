@@ -37,13 +37,17 @@ trait ManagesPaymentMethods // @phpstan-ignore-line trait.unused - ManagesPaymen
 
         $generator = LaravelPolar::sdk()->customerPortal->customers->listPaymentMethods(security: $security);
 
+        $statusCode = 500;
+
         foreach ($generator as $response) {
+            $statusCode = $response->statusCode ?? 500;
+
             if ($response->statusCode === 200) {
                 return collect($response->listResourceCustomerPaymentMethod->items ?? []);
             }
         }
 
-        return collect();
+        throw new Errors\APIException('Failed to list payment methods', $statusCode, '', null);
     }
 
     /**

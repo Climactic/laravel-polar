@@ -1180,6 +1180,7 @@ $validated = $user->validateLicenseKey('LICENSE-KEY-VALUE', organizationId: 'oth
 #### Updating a License Key (admin)
 
 ```php
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 
 $updated = LaravelPolar::updateLicenseKey('key-id-123', new Components\LicenseKeyUpdate(
@@ -1223,6 +1224,7 @@ $subscription->resendSeatInvitation('seat-id');
 Reusable checkout links (admin-scoped):
 
 ```php
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 
 $link = LaravelPolar::createCheckoutLink(new Components\CheckoutLinkCreateProducts(
@@ -1239,6 +1241,7 @@ LaravelPolar::deleteCheckoutLink('checkout-link-id');
 ### Custom Fields
 
 ```php
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Components;
 
 $field = LaravelPolar::createCustomField(new Components\CustomFieldCreateText(
@@ -1260,6 +1263,7 @@ $data = $order->customFieldData();
 ### Metrics, Organizations & Files
 
 ```php
+use Climactic\LaravelPolar\LaravelPolar;
 use Polar\Models\Operations;
 use Polar\Models\Components;
 use Brick\DateTime\LocalDate;

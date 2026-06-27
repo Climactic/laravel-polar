@@ -182,6 +182,18 @@ it('manages seats through the subscription', function () {
     $fake->assertCalledWith('resendSeatInvitation', fn($id) => $id === 'seat_1');
 });
 
+it('guards seat operations when the subscription has no polar_id', function () {
+    $subscription = Subscription::factory()->make(['polar_id' => null]);
+
+    $fake = LaravelPolar::fake();
+
+    expect(fn() => $subscription->seats())->toThrow(\RuntimeException::class);
+    expect(fn() => $subscription->assignSeat(email: 'member@example.com'))->toThrow(\RuntimeException::class);
+
+    $fake->assertNotCalled('listSeats');
+    $fake->assertNotCalled('assignSeat');
+});
+
 // ──────────────────────────────────────────────────────────────
 //  Order model helpers
 // ──────────────────────────────────────────────────────────────
@@ -255,6 +267,19 @@ it('returns empty custom field data for an unsynced order', function () {
     $order = Order::factory()->make(['polar_id' => null]);
 
     expect($order->customFieldData())->toBe([]);
+});
+
+it('reads custom field data through the getOrder facade wrapper', function () {
+    $order = Order::factory()->make(['polar_id' => 'order_1']);
+
+    $sdkOrder = Mockery::mock(Components\Order::class);
+    $sdkOrder->customFieldData = ['plan' => 'pro'];
+
+    $fake = LaravelPolar::fake();
+    $fake->stub('getOrder', $sdkOrder);
+
+    expect($order->customFieldData())->toBe(['plan' => 'pro']);
+    $fake->assertCalledWith('getOrder', fn($id) => $id === 'order_1');
 });
 
 // ──────────────────────────────────────────────────────────────
