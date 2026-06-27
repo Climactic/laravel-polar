@@ -8,6 +8,7 @@ use Climactic\LaravelPolar\Concerns\ManagesCustomer;
 use Climactic\LaravelPolar\Concerns\ManagesCustomerMeters;
 use Climactic\LaravelPolar\Concerns\ManagesLicenseKeys;
 use Climactic\LaravelPolar\Concerns\ManagesOrders;
+use Climactic\LaravelPolar\Concerns\ManagesPaymentMethods;
 use Climactic\LaravelPolar\Concerns\ManagesSubscription;
 
 trait Billable
@@ -18,5 +19,6 @@ trait Billable
     use ManagesCustomerMeters;
     use ManagesLicenseKeys;
     use ManagesOrders;
+    use ManagesPaymentMethods;
     use ManagesSubscription;
 }

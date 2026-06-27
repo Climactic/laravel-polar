@@ -325,7 +325,7 @@ class LaravelPolar
 
         $response = $sdk->events->ingest(request: $request);
 
-        if ($response->statusCode !== 202) {
+        if ($response->statusCode < 200 || $response->statusCode >= 300) {
             throw new Errors\APIException('Failed to ingest events', $response->statusCode, '', null);
         }
     }
@@ -387,10 +387,12 @@ class LaravelPolar
     /**
      * Create a customer.
      *
+     * @param Components\CustomerIndividualCreate|Components\CustomerTeamCreate $request
+     *
      * @throws Errors\APIException
      * @throws PolarApiError
      */
-    public static function createCustomer(Components\CustomerCreate $request): Components\CustomerWithMembers
+    public static function createCustomer(Components\CustomerIndividualCreate|Components\CustomerTeamCreate $request): Components\CustomerIndividual|Components\CustomerTeam
     {
         $fake = self::recordIfFaking('createCustomer', [$request]);
         if ($fake[0]) {
@@ -401,8 +403,8 @@ class LaravelPolar
 
         $response = $sdk->customers->create(request: $request);
 
-        if ($response->statusCode === 201 && $response->customerWithMembers !== null) {
-            return $response->customerWithMembers;
+        if ($response->statusCode === 201 && $response->customer !== null) {
+            return $response->customer;
         }
 
         throw new Errors\APIException('Failed to create customer', $response->statusCode ?? 500, '', null);
@@ -414,7 +416,7 @@ class LaravelPolar
      * @throws Errors\APIException
      * @throws PolarApiError
      */
-    public static function getCustomer(string $customerId): Components\CustomerWithMembers
+    public static function getCustomer(string $customerId): Components\CustomerIndividual|Components\CustomerTeam
     {
         $fake = self::recordIfFaking('getCustomer', [$customerId]);
         if ($fake[0]) {
@@ -425,8 +427,8 @@ class LaravelPolar
 
         $response = $sdk->customers->get(id: $customerId);
 
-        if ($response->statusCode === 200 && $response->customerWithMembers !== null) {
-            return $response->customerWithMembers;
+        if ($response->statusCode === 200 && $response->customer !== null) {
+            return $response->customer;
         }
 
         throw new Errors\APIException('Failed to get customer', $response->statusCode ?? 500, '', null);
@@ -438,7 +440,7 @@ class LaravelPolar
      * @throws Errors\APIException
      * @throws PolarApiError
      */
-    public static function updateCustomer(string $customerId, Components\CustomerUpdate $request): Components\CustomerWithMembers
+    public static function updateCustomer(string $customerId, Components\CustomerUpdate $request): Components\CustomerIndividual|Components\CustomerTeam
     {
         $fake = self::recordIfFaking('updateCustomer', [$customerId, $request]);
         if ($fake[0]) {
@@ -449,8 +451,8 @@ class LaravelPolar
 
         $response = $sdk->customers->update(id: $customerId, customerUpdate: $request);
 
-        if ($response->statusCode === 200 && $response->customerWithMembers !== null) {
-            return $response->customerWithMembers;
+        if ($response->statusCode === 200 && $response->customer !== null) {
+            return $response->customer;
         }
 
         throw new Errors\APIException('Failed to update customer', $response->statusCode ?? 500, '', null);
@@ -512,7 +514,7 @@ class LaravelPolar
      * @throws Errors\APIException
      * @throws PolarApiError
      */
-    public static function getCustomerByExternalId(string $externalId): Components\CustomerWithMembers
+    public static function getCustomerByExternalId(string $externalId): Components\CustomerIndividual|Components\CustomerTeam
     {
         $fake = self::recordIfFaking('getCustomerByExternalId', [$externalId]);
         if ($fake[0]) {
@@ -523,8 +525,8 @@ class LaravelPolar
 
         $response = $sdk->customers->getExternal(externalId: $externalId);
 
-        if ($response->statusCode === 200 && $response->customerWithMembers !== null) {
-            return $response->customerWithMembers;
+        if ($response->statusCode === 200 && $response->customer !== null) {
+            return $response->customer;
         }
 
         throw new Errors\APIException('Failed to get customer by external ID', $response->statusCode ?? 500, '', null);
@@ -536,7 +538,7 @@ class LaravelPolar
      * @throws Errors\APIException
      * @throws PolarApiError
      */
-    public static function getCustomerState(string $customerId): Components\CustomerState
+    public static function getCustomerState(string $customerId): Components\CustomerStateIndividual|Components\CustomerStateTeam
     {
         $fake = self::recordIfFaking('getCustomerState', [$customerId]);
         if ($fake[0]) {
@@ -1173,6 +1175,508 @@ class LaravelPolar
         }
 
         throw new Errors\APIException('Failed to update product benefits', $response->statusCode ?? 500, '', null);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Custom Fields Full CRUD
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Create a custom field.
+     *
+     * @param Components\CustomFieldCreateText|Components\CustomFieldCreateNumber|Components\CustomFieldCreateDate|Components\CustomFieldCreateCheckbox|Components\CustomFieldCreateSelect $request
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function createCustomField(Components\CustomFieldCreateText|Components\CustomFieldCreateNumber|Components\CustomFieldCreateDate|Components\CustomFieldCreateCheckbox|Components\CustomFieldCreateSelect $request): Components\CustomFieldText|Components\CustomFieldNumber|Components\CustomFieldDate|Components\CustomFieldCheckbox|Components\CustomFieldSelect
+    {
+        $fake = self::recordIfFaking('createCustomField', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customFields->create(request: $request);
+
+        if ($response->statusCode === 201 && $response->customField !== null) {
+            return $response->customField;
+        }
+
+        throw new Errors\APIException('Failed to create custom field', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Update a custom field.
+     *
+     * @param Components\CustomFieldUpdateText|Components\CustomFieldUpdateNumber|Components\CustomFieldUpdateDate|Components\CustomFieldUpdateCheckbox|Components\CustomFieldUpdateSelect $request
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function updateCustomField(string $customFieldId, Components\CustomFieldUpdateText|Components\CustomFieldUpdateNumber|Components\CustomFieldUpdateDate|Components\CustomFieldUpdateCheckbox|Components\CustomFieldUpdateSelect $request): Components\CustomFieldText|Components\CustomFieldNumber|Components\CustomFieldDate|Components\CustomFieldCheckbox|Components\CustomFieldSelect
+    {
+        $fake = self::recordIfFaking('updateCustomField', [$customFieldId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customFields->update(customFieldUpdate: $request, id: $customFieldId);
+
+        if ($response->statusCode === 200 && $response->customField !== null) {
+            return $response->customField;
+        }
+
+        throw new Errors\APIException('Failed to update custom field', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Delete a custom field.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function deleteCustomField(string $customFieldId): void
+    {
+        $fake = self::recordIfFaking('deleteCustomField', [$customFieldId]);
+        if ($fake[0]) {
+            return;
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customFields->delete(id: $customFieldId);
+
+        if ($response->statusCode !== 200 && $response->statusCode !== 204) {
+            throw new Errors\APIException('Failed to delete custom field', $response->statusCode, '', null);
+        }
+    }
+
+    /**
+     * List custom fields.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function listCustomFields(?Operations\CustomFieldsListRequest $request = null): Operations\CustomFieldsListResponse
+    {
+        $fake = self::recordIfFaking('listCustomFields', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        if ($request === null) {
+            $request = new Operations\CustomFieldsListRequest();
+        }
+
+        $generator = $sdk->customFields->list(request: $request);
+
+        foreach ($generator as $response) {
+            if ($response->statusCode === 200) {
+                return $response;
+            }
+        }
+
+        throw new Errors\APIException('Failed to list custom fields', 500, '', null);
+    }
+
+    /**
+     * Get a specific custom field by ID.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function getCustomField(string $customFieldId): Components\CustomFieldText|Components\CustomFieldNumber|Components\CustomFieldDate|Components\CustomFieldCheckbox|Components\CustomFieldSelect
+    {
+        $fake = self::recordIfFaking('getCustomField', [$customFieldId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customFields->get(id: $customFieldId);
+
+        if ($response->statusCode === 200 && $response->customField !== null) {
+            return $response->customField;
+        }
+
+        throw new Errors\APIException('Failed to get custom field', $response->statusCode ?? 500, '', null);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Checkout Links Full CRUD
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Create a checkout link.
+     *
+     * @param Components\CheckoutLinkCreateProductPrice|Components\CheckoutLinkCreateProduct|Components\CheckoutLinkCreateProducts $request
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function createCheckoutLink(Components\CheckoutLinkCreateProductPrice|Components\CheckoutLinkCreateProduct|Components\CheckoutLinkCreateProducts $request): Components\CheckoutLink
+    {
+        $fake = self::recordIfFaking('createCheckoutLink', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->checkoutLinks->create(request: $request);
+
+        if ($response->statusCode === 201 && $response->checkoutLink !== null) {
+            return $response->checkoutLink;
+        }
+
+        throw new Errors\APIException('Failed to create checkout link', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Update a checkout link.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function updateCheckoutLink(string $checkoutLinkId, Components\CheckoutLinkUpdate $request): Components\CheckoutLink
+    {
+        $fake = self::recordIfFaking('updateCheckoutLink', [$checkoutLinkId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->checkoutLinks->update(checkoutLinkUpdate: $request, id: $checkoutLinkId);
+
+        if ($response->statusCode === 200 && $response->checkoutLink !== null) {
+            return $response->checkoutLink;
+        }
+
+        throw new Errors\APIException('Failed to update checkout link', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Delete a checkout link.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function deleteCheckoutLink(string $checkoutLinkId): void
+    {
+        $fake = self::recordIfFaking('deleteCheckoutLink', [$checkoutLinkId]);
+        if ($fake[0]) {
+            return;
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->checkoutLinks->delete(id: $checkoutLinkId);
+
+        if ($response->statusCode !== 200 && $response->statusCode !== 204) {
+            throw new Errors\APIException('Failed to delete checkout link', $response->statusCode, '', null);
+        }
+    }
+
+    /**
+     * List checkout links.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function listCheckoutLinks(?Operations\CheckoutLinksListRequest $request = null): Operations\CheckoutLinksListResponse
+    {
+        $fake = self::recordIfFaking('listCheckoutLinks', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        if ($request === null) {
+            $request = new Operations\CheckoutLinksListRequest();
+        }
+
+        $generator = $sdk->checkoutLinks->list(request: $request);
+
+        foreach ($generator as $response) {
+            if ($response->statusCode === 200) {
+                return $response;
+            }
+        }
+
+        throw new Errors\APIException('Failed to list checkout links', 500, '', null);
+    }
+
+    /**
+     * Get a specific checkout link by ID.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function getCheckoutLink(string $checkoutLinkId): Components\CheckoutLink
+    {
+        $fake = self::recordIfFaking('getCheckoutLink', [$checkoutLinkId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->checkoutLinks->get(id: $checkoutLinkId);
+
+        if ($response->statusCode === 200 && $response->checkoutLink !== null) {
+            return $response->checkoutLink;
+        }
+
+        throw new Errors\APIException('Failed to get checkout link', $response->statusCode ?? 500, '', null);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Seats (admin)
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * List the seats on a subscription or order.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function listSeats(?string $subscriptionId = null, ?string $orderId = null): Components\SeatsList
+    {
+        $fake = self::recordIfFaking('listSeats', [$subscriptionId, $orderId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customerSeats->listSeats(subscriptionId: $subscriptionId, orderId: $orderId);
+
+        if ($response->statusCode === 200 && $response->seatsList !== null) {
+            return $response->seatsList;
+        }
+
+        throw new Errors\APIException('Failed to list seats', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Assign a seat to a member by email, customer id, or external id.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function assignSeat(Components\SeatAssign $request): Components\CustomerSeat
+    {
+        $fake = self::recordIfFaking('assignSeat', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customerSeats->assignSeat(request: $request);
+
+        if ($response->statusCode === 200 && $response->customerSeat !== null) {
+            return $response->customerSeat;
+        }
+
+        throw new Errors\APIException('Failed to assign seat', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Revoke a seat from a member.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function revokeSeat(string $seatId): Components\CustomerSeat
+    {
+        $fake = self::recordIfFaking('revokeSeat', [$seatId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customerSeats->revokeSeat(seatId: $seatId);
+
+        if ($response->statusCode === 200 && $response->customerSeat !== null) {
+            return $response->customerSeat;
+        }
+
+        throw new Errors\APIException('Failed to revoke seat', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * Resend the invitation email for a pending seat.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function resendSeatInvitation(string $seatId): Components\CustomerSeat
+    {
+        $fake = self::recordIfFaking('resendSeatInvitation', [$seatId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->customerSeats->resendInvitation(seatId: $seatId);
+
+        if ($response->statusCode === 200 && $response->customerSeat !== null) {
+            return $response->customerSeat;
+        }
+
+        throw new Errors\APIException('Failed to resend seat invitation', $response->statusCode ?? 500, '', null);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Metrics, Organizations & Files
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Fetch Polar metrics (analytics) for a given period.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function getMetrics(Operations\MetricsGetRequest $request): Components\MetricsResponse
+    {
+        $fake = self::recordIfFaking('getMetrics', [$request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->metrics->get(request: $request);
+
+        if ($response->statusCode === 200 && $response->metricsResponse !== null) {
+            return $response->metricsResponse;
+        }
+
+        throw new Errors\APIException('Failed to get metrics', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * List organizations the authenticated access token has access to.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function listOrganizations(?string $slug = null, ?int $page = null, ?int $limit = null): Operations\OrganizationsListResponse
+    {
+        $fake = self::recordIfFaking('listOrganizations', [$slug, $page, $limit]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $generator = $sdk->organizations->list(
+            slug: $slug,
+            page: $page,
+            limit: $limit,
+        );
+
+        foreach ($generator as $response) {
+            if ($response->statusCode === 200) {
+                return $response;
+            }
+        }
+
+        throw new Errors\APIException('Failed to list organizations', 500, '', null);
+    }
+
+    /**
+     * Get a single organization by ID.
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function getOrganization(string $organizationId): Components\Organization
+    {
+        $fake = self::recordIfFaking('getOrganization', [$organizationId]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->organizations->get(id: $organizationId);
+
+        if ($response->statusCode === 200 && $response->organization !== null) {
+            return $response->organization;
+        }
+
+        throw new Errors\APIException('Failed to get organization', $response->statusCode ?? 500, '', null);
+    }
+
+    /**
+     * List files (admin-scoped).
+     *
+     * @param  string|array<string>|null  $organizationId
+     * @param  string|array<string>|null  $ids
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function listFiles(string|array|null $organizationId = null, string|array|null $ids = null, ?int $page = null, ?int $limit = null): Operations\FilesListResponse
+    {
+        $fake = self::recordIfFaking('listFiles', [$organizationId, $ids, $page, $limit]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $generator = $sdk->files->list(
+            organizationId: $organizationId,
+            ids: $ids,
+            page: $page,
+            limit: $limit,
+        );
+
+        foreach ($generator as $response) {
+            if ($response->statusCode === 200) {
+                return $response;
+            }
+        }
+
+        throw new Errors\APIException('Failed to list files', 500, '', null);
+    }
+
+    /**
+     * Update a license key (admin-scoped).
+     *
+     * @throws Errors\APIException
+     * @throws PolarApiError
+     */
+    public static function updateLicenseKey(string $licenseKeyId, Components\LicenseKeyUpdate $request): Components\LicenseKeyRead
+    {
+        $fake = self::recordIfFaking('updateLicenseKey', [$licenseKeyId, $request]);
+        if ($fake[0]) {
+            return $fake[1];
+        }
+
+        $sdk = self::sdk();
+
+        $response = $sdk->licenseKeys->update(licenseKeyUpdate: $request, id: $licenseKeyId);
+
+        if ($response->statusCode === 200 && $response->licenseKeyRead !== null) {
+            return $response->licenseKeyRead;
+        }
+
+        throw new Errors\APIException('Failed to update license key', $response->statusCode ?? 500, '', null);
     }
 
     /**

@@ -2,6 +2,32 @@
 
 All notable changes to `laravel-polar` will be documented in this file.
 
+## Unreleased
+
+Sync upstream `danestves/laravel-polar` features (v2.3–v2.13) onto our fork.
+
+### Added
+
+- Upgraded `polar-sh/sdk` to `^0.10.0`.
+- Seats: `LaravelPolar::listSeats()`, `assignSeat()`, `revokeSeat()`, `resendSeatInvitation()`, plus `Subscription::seats()`, `assignSeat()`, `revokeSeat()`, `resendSeatInvitation()`.
+- Checkout links: `LaravelPolar::createCheckoutLink()`, `getCheckoutLink()`, `updateCheckoutLink()`, `deleteCheckoutLink()`, `listCheckoutLinks()`.
+- Custom fields: `LaravelPolar::createCustomField()`, `getCustomField()`, `updateCustomField()`, `deleteCustomField()`, `listCustomFields()`, plus `Order::customFieldData()`.
+- Metrics, organizations and files: `LaravelPolar::getMetrics()`, `getOrganization()`, `listOrganizations()`, `listFiles()`.
+- License keys: `LaravelPolar::updateLicenseKey()` (admin update).
+- Subscriptions: `applyDiscount()`, `removeDiscount()`, `updateTrial()`, `trialEndsAt()`.
+- Orders: `receiptUrl()`, `downloadInvoice()`, `refunds()`.
+
+### Changed
+
+- Replaced `Order::issueRefund(int $amount, ...)` with `Order::refund(?int $amount = null, ?RefundReason $reason = null, ?string $comment = null, ?array $metadata = null)`, matching upstream: refunds the remaining unrefunded amount by default with reason `customer_request`.
+- Payment methods: `$billable->paymentMethods()` and `$billable->deletePaymentMethod()` via the new `ManagesPaymentMethods` concern.
+
+### Fixed
+
+- `Checkout::toResponse()` now detects the `X-Inertia` header and returns `Inertia::location()` to avoid CORS issues on Inertia visits.
+- `LaravelPolar::ingestEvents()` now accepts any 2xx response as success (previously required exactly `202`).
+- Migrated webhook handling and customer APIs to the SDK 0.10 discriminated-union customer types (`CustomerIndividual`/`CustomerTeam`, `CustomerStateIndividual`/`CustomerStateTeam`).
+
 ## v2.2.1 - 2026-03-27 - 2026-03-26
 
 chore: laravel 13 support

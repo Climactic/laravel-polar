@@ -172,11 +172,14 @@ class Order extends Model
     }
 
     /**
-     * Refund this order (full or partial).
+     * Issue a refund for this order. Defaults to refunding the remaining
+     * unrefunded amount with reason "customer_request".
+     *
+     * @param  array<string, scalar|null>|null  $metadata
      *
      * @throws \RuntimeException if the order has no polar_id
      */
-    public function issueRefund(int $amount, ?RefundReason $reason = null): Refund
+    public function refund(?int $amount = null, ?RefundReason $reason = null, ?string $comment = null, ?array $metadata = null): Refund
     {
         if ($this->polar_id === null) {
             throw new \RuntimeException('Cannot refund an order without a polar_id.');
@@ -184,11 +187,129 @@ class Order extends Model
 
         $request = new RefundCreate(
             orderId: $this->polar_id,
-            reason: $reason ?? RefundReason::Other,
-            amount: $amount,
+            reason: $reason ?? RefundReason::CustomerRequest,
+            amount: $amount ?? max(0, $this->amount - $this->refunded_amount),
+            metadata: $metadata,
+            comment: $comment,
         );
 
         return LaravelPolar::createRefund($request);
+    }
+
+    /**
+     * Memoized custom field data for this order.
+     *
+     * @var array<string, string|int|bool|\DateTime|null>|null
+     */
+    protected ?array $cachedCustomFieldData = null;
+
+    /**
+     * Get the custom field data submitted at checkout for this order. Fetched
+     * from Polar on demand and memoized for the lifetime of this Order instance.
+     *
+     * @return array<string, string|int|bool|\DateTime|null>
+     *
+     * @throws \Polar\Models\Errors\APIException
+     * @throws \Exception
+     */
+    public function customFieldData(): array
+    {
+        if ($this->cachedCustomFieldData !== null) {
+            return $this->cachedCustomFieldData;
+        }
+
+        if ($this->polar_id === null) {
+            return $this->cachedCustomFieldData = [];
+        }
+
+        $sdkOrder = LaravelPolar::getOrder($this->polar_id);
+
+        return $this->cachedCustomFieldData = $sdkOrder->customFieldData ?? [];
+    }
+
+    /**
+     * Memoized invoice/receipt URL for this order.
+     */
+    protected ?string $cachedReceiptUrl = null;
+
+    /**
+     * Get the invoice/receipt URL for this order. Triggers invoice generation
+     * on Polar (the result is asynchronous on their side), then returns the
+     * URL of the generated PDF. Memoized per Order instance.
+     *
+     * Returns null when the order has no `polar_id` or no customer association.
+     *
+     * @throws \Polar\Models\Errors\APIException
+     * @throws \Exception
+     */
+    public function receiptUrl(): ?string
+    {
+        if ($this->cachedReceiptUrl !== null) {
+            return $this->cachedReceiptUrl;
+        }
+
+        if ($this->polar_id === null || empty($this->customer_id)) {
+            return null;
+        }
+
+        $session = LaravelPolar::createCustomerSession(
+            new \Polar\Models\Components\CustomerSessionCustomerIDCreate(customerId: $this->customer_id),
+        );
+
+        $response = LaravelPolar::sdk()->customerPortal->orders->generateInvoice(
+            security: new \Polar\Models\Operations\CustomerPortalOrdersGenerateInvoiceSecurity(customerSession: $session->token),
+            id: $this->polar_id,
+        );
+
+        $body = $response->any;
+        if (is_array($body) && isset($body['url']) && is_string($body['url'])) {
+            return $this->cachedReceiptUrl = $body['url'];
+        }
+
+        if (is_object($body) && isset($body->url) && is_string($body->url)) {
+            return $this->cachedReceiptUrl = $body->url;
+        }
+
+        return null;
+    }
+
+    /**
+     * Redirect the user's browser to the invoice/receipt URL for this order.
+     *
+     * @throws \RuntimeException when no URL is available (e.g. unsynced order)
+     * @throws \Polar\Models\Errors\APIException
+     * @throws \Exception
+     */
+    public function downloadInvoice(): \Illuminate\Http\RedirectResponse
+    {
+        $url = $this->receiptUrl();
+
+        if ($url === null) {
+            throw new \RuntimeException('No receipt URL available for this order.');
+        }
+
+        return new \Illuminate\Http\RedirectResponse($url);
+    }
+
+    /**
+     * List refunds for this order.
+     *
+     * @return \Illuminate\Support\Collection<int, Refund>
+     *
+     * @throws \Polar\Models\Errors\APIException
+     * @throws \Exception
+     */
+    public function refunds(): \Illuminate\Support\Collection
+    {
+        if ($this->polar_id === null) {
+            return collect();
+        }
+
+        $response = LaravelPolar::listRefunds(
+            new \Polar\Models\Operations\RefundsListRequest(orderId: $this->polar_id),
+        );
+
+        return collect($response->listResourceRefund->items ?? []);
     }
 
     /**
